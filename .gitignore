@@ -1,0 +1,66 @@
+# DOCUMENTATION PERSO
+docs-perso/
+docs/
+
+# ENVIRONNEMENT & SECRETS
+.env
+.env.*
+.env.example
+*.pem
+*.key
+*.p12
+
+# BACKEND SYMFONY
+/backend/vendor/
+/backend/var/
+/backend/.phpunit.cache/
+/backend/.env.local
+/backend/.env.local.php
+/backend/.env.*.local
+
+# FRONTEND REACT
+/frontend/node_modules/
+/frontend/.pnp
+/frontend/.pnp.js
+/frontend/dist/
+/frontend/build/
+/frontend/coverage/
+/frontend/.vite/
+/frontend/.env.local
+/frontend/.env.*.local
+
+# DOCKER
+/docker/data/
+compose.override.yaml
+
+# DATABASE
+*.sql
+*.sqlite
+*.db
+
+# OS SPECIFIC
+.DS_Store
+Thumbs.db
+*~
+
+# IDE & EDITORS
+.idea/
+.vscode/
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# LOGS
+*.log
+
+# CLOUDINARY
+cloudinary-credentials.json
+
+# HEROKU
+.heroku/
+
+# CI/CD
+.github/workflows/.env
+
+
