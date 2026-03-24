@@ -1,0 +1,90 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+
+jobs:
+  phpunit:
+    name: PHPUnit
+    runs-on: ubuntu-24.04
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: ${{ secrets.CI_DB_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.CI_DB_PASSWORD }}
+          POSTGRES_DB: bloc3_mmotors_test
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.3 with PCOV
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo, pdo_pgsql, pcov
+          coverage: pcov
+
+      - name: Cache vendor
+        uses: actions/cache@v4
+        with:
+          path: backend/vendor
+          key: vendor-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: vendor-
+
+      - name: Create .env for CI
+        working-directory: backend
+        run: |
+          cat > .env << EOF
+          APP_ENV=test
+          APP_SECRET=${{ secrets.CI_APP_SECRET }}
+          DATABASE_URL=${{ secrets.CI_DATABASE_URL }}
+          DEFAULT_URI=http://localhost
+          CORS_ALLOW_ORIGIN=^https?://localhost(:[0-9]+)?$
+          JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
+          JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
+          JWT_PASSPHRASE=${{ secrets.CI_JWT_PASSPHRASE }}
+          EOF
+
+      - name: Generate JWT keys for CI
+        working-directory: backend
+        run: |
+          mkdir -p config/jwt
+          openssl genrsa -aes256 -passout pass:${{ secrets.CI_JWT_PASSPHRASE }} -out config/jwt/private.pem 4096
+          openssl rsa -passin pass:${{ secrets.CI_JWT_PASSPHRASE }} -in config/jwt/private.pem -pubout -out config/jwt/public.pem
+
+      - name: Install dependencies
+        working-directory: backend
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Setup test database
+        working-directory: backend
+        run: |
+          php bin/console doctrine:database:create --env=test --if-not-exists
+          if ls migrations/*.php 2>/dev/null | grep -q .; then
+            php bin/console doctrine:migrations:migrate --env=test --no-interaction
+          else
+            echo "No migrations yet, skipping."
+          fi
+
+      - name: Run PHPUnit with coverage
+        working-directory: backend
+        run: php bin/phpunit --coverage-text
