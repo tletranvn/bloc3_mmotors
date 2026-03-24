@@ -1,0 +1,93 @@
+services:
+ 
+  database:
+    image: postgres:17-alpine
+    container_name: bloc3_mmotors_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}            
+      POSTGRES_USER: ${POSTGRES_USER}        
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} 
+    ports:
+      - "5434:5432"
+
+    # Vérifie periodiquement que PostgreSQL est opérationnel
+    healthcheck:
+      test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}"]
+      timeout: 5s        # Temps max pour chaque test
+      retries: 5         # Nombre d'essais avant echec
+      start_period: 60s  # Temps de grace au demarrage
+    volumes:
+      - database_data:/var/lib/postgresql/data:rw
+    networks:
+      - bloc3_mmotors_network
+
+  php:
+    build:
+      context: .                    
+      dockerfile: docker/php/Dockerfile  
+    container_name: bloc3_mmotors_php
+    volumes:
+      - .:/var/www/html
+    working_dir: /var/www/html/backend
+    environment:
+      APP_ENV: dev
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}?serverVersion=17&charset=utf8"
+
+    
+    # depends_on = Ce service demarre APRES les services listes
+    depends_on:
+      database:
+        condition: service_healthy
+
+    networks:
+      - bloc3_mmotors_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: bloc3_mmotors_nginx
+    ports:
+      - "8082:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+
+    # Nginx doit demarrer APRES PHP car il lui transmet les requetes
+    depends_on:
+      - php
+
+    networks:
+      - bloc3_mmotors_network
+
+  
+  node:
+    build:
+      context: .
+      dockerfile: docker/node/Dockerfile
+    container_name: bloc3_mmotors_node
+    ports:
+      - "5175:5173"
+    volumes:
+      - .:/var/www/html
+      - /var/www/html/frontend/node_modules
+    working_dir: /var/www/html/frontend
+    environment:
+      NODE_ENV: development
+      # IMPORTANT : Permet a Vite d'etre accessible depuis l'exterieur du container
+      # Sans cela, Vite n'ecoute que sur localhost (inaccessible depuis l'hote)
+      VITE_HOST: "0.0.0.0"
+
+    # Garde le container interactif (necessaire pour certaines commandes npm)
+    stdin_open: true
+    tty: true
+
+    networks:
+      - bloc3_mmotors_network
+
+
+volumes:
+  database_data:
+  
+networks:
+  bloc3_mmotors_network:
+    # Driver bridge : Reseau prive isole
+    driver: bridge
