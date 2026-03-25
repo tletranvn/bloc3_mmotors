@@ -1,17 +1,14 @@
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import App from '../../App'
 
 describe('App', () => {
-  it('affiche le titre Vite + React', () => {
+  it('affiche la homepage avec un titre principal', () => {
     render(<App />)
-    expect(screen.getByText('Vite + React')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
   })
 
-  it('incremente le compteur au clic', async () => {
+  it('affiche la navigation principale', () => {
     render(<App />)
-    const button = screen.getByRole('button', { name: /count is 0/i })
-    await userEvent.click(button)
-    expect(screen.getByRole('button', { name: /count is 1/i })).toBeInTheDocument()
+    expect(screen.getByRole('navigation', { name: /principale/i })).toBeInTheDocument()
   })
 })
