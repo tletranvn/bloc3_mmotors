@@ -2,10 +2,24 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Put;
 use App\Repository\RentalContractRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
+#[ApiResource(
+    operations: [
+        new GetCollection(security: "is_granted('ROLE_USER')"),
+        new Get(security: "is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object.getSubmission().getClient() == user)"),
+        new Put(security: "is_granted('ROLE_ADMIN')", denormalizationContext: ['groups' => ['rentalContract:admin:write']]),
+    ],
+    normalizationContext: ['groups' => ['rentalContract:read']],
+    paginationMaximumItemsPerPage: 50,
+)]
 #[ORM\Entity(repositoryClass: RentalContractRepository::class)]
 class RentalContract
 {
@@ -16,36 +30,47 @@ class RentalContract
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column]
+    #[Groups(['rentalContract:read'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['rentalContract:read'])]
     private ?\DateTimeInterface $startDate = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['rentalContract:read'])]
     private ?\DateTimeInterface $endDate = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[Groups(['rentalContract:read'])]
     private ?string $monthlyPayment = null;
 
     #[ORM\Column(length: 20)]
+    #[Groups(['rentalContract:read', 'rentalContract:admin:write'])]
     private ?string $contractStatus = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    #[Groups(['rentalContract:read'])]
     private ?string $purchaseOptionPrice = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Groups(['rentalContract:read', 'rentalContract:admin:write'])]
     private ?\DateTimeInterface $lastPaymentDate = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Groups(['rentalContract:read', 'rentalContract:admin:write'])]
     private ?\DateTimeInterface $nextPaymentDue = null;
 
     #[ORM\Column]
+    #[Groups(['rentalContract:read', 'rentalContract:admin:write'])]
     private ?int $paymentsReceived = null;
 
     #[ORM\Column]
+    #[Groups(['rentalContract:read'])]
     private ?int $totalPayments = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(['rentalContract:read'])]
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
@@ -53,6 +78,7 @@ class RentalContract
 
     #[ORM\OneToOne(targetEntity: Submission::class, inversedBy: 'rentalContract')]
     #[ORM\JoinColumn(nullable: false, unique: true)]
+    #[Groups(['rentalContract:read'])]
     private ?Submission $submission = null;
 
     public function __construct()

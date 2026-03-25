@@ -2,12 +2,28 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\SubmissionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
+#[ApiResource(
+    operations: [
+        new GetCollection(security: "is_granted('ROLE_USER')"),
+        new Get(security: "is_granted('ROLE_USER') and object.getClient() == user or is_granted('ROLE_ADMIN')"),
+        new Post(security: "is_granted('ROLE_USER')", denormalizationContext: ['groups' => ['submission:write']]),
+        new Put(security: "is_granted('ROLE_ADMIN')", denormalizationContext: ['groups' => ['submission:admin:write']]),
+    ],
+    normalizationContext: ['groups' => ['submission:read']],
+    denormalizationContext: ['groups' => ['submission:write']],
+)]
 #[ORM\Entity(repositoryClass: SubmissionRepository::class)]
 #[ORM\UniqueConstraint(name: 'uq_submission_client_vehicle_type', columns: ['client_id', 'vehicle_id', 'type'])]
 class Submission
@@ -22,42 +38,54 @@ class Submission
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column]
+    #[Groups(['submission:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 20)]
+    #[Groups(['submission:read', 'submission:write'])]
     private ?string $type = null;
 
     #[ORM\Column(length: 20)]
+    #[Groups(['submission:read', 'submission:admin:write'])]
     private ?string $status = null;
 
     #[ORM\Column(length: 100)]
+    #[Groups(['submission:read', 'submission:write'])]
     private ?string $profession = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[Groups(['submission:read', 'submission:write'])]
     private ?string $monthlyIncome = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['submission:read', 'submission:write'])]
     private ?int $duration = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['submission:read', 'submission:write'])]
     private ?int $annualKm = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    #[Groups(['submission:read', 'submission:admin:write'])]
     private ?string $monthlyTotal = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['submission:read', 'submission:admin:write'])]
     private ?string $rejectionReason = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(['submission:read'])]
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'submissions')]
+    #[Groups(['submission:read'])]
     private ?User $client = null;
 
     #[ORM\ManyToOne(targetEntity: Vehicle::class, inversedBy: 'submissions')]
+    #[Groups(['submission:read', 'submission:write'])]
     private ?Vehicle $vehicle = null;
 
     /** @var Collection<int, Document> */

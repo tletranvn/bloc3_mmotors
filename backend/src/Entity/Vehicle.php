@@ -2,12 +2,31 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\VehicleRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
+#[ApiResource(
+    operations: [
+        new GetCollection(),
+        new Get(),
+        new Post(security: "is_granted('ROLE_ADMIN')"),
+        new Put(security: "is_granted('ROLE_ADMIN')"),
+        new Delete(security: "is_granted('ROLE_ADMIN')"),
+    ],
+    normalizationContext: ['groups' => ['vehicle:read']],
+    denormalizationContext: ['groups' => ['vehicle:write']],
+    paginationMaximumItemsPerPage: 100,
+)]
 #[ORM\Entity(repositoryClass: VehicleRepository::class)]
 class Vehicle
 {
@@ -29,48 +48,62 @@ class Vehicle
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column]
+    #[Groups(['vehicle:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $brand = null;
 
     #[ORM\Column(length: 100)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $model = null;
 
     #[ORM\Column]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?int $year = null;
 
     #[ORM\Column]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?int $mileage = null;
 
     #[ORM\Column(length: 20)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $fuelType = null;
 
     #[ORM\Column(length: 50, nullable: true)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $color = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $salePrice = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $rentalPriceMonthly = null;
 
     #[ORM\Column(length: 20)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $availabilityType = null;
 
     #[ORM\Column(length: 20)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $status = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $description = null;
 
     #[ORM\Column(length: 500, nullable: true)]
+    #[Groups(['vehicle:read', 'vehicle:write'])]
     private ?string $imageUrl = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $deletedAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(['vehicle:read'])]
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
