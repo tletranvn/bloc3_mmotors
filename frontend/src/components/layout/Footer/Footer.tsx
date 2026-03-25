@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import Logo from '../../shared/Logo'
+import { MotorsLogo } from '../../shared/LogoM'
 
 const year = new Date().getFullYear()
 
@@ -11,7 +11,7 @@ export default function Footer() {
           {/* À propos */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <Logo size={20} />
+              <MotorsLogo className="w-8 h-8 text-primary group-hover:text-foreground transition-colors" />
               <span className="text-foreground font-display font-extrabold tracking-widest text-sm">M-MOTORS</span>
             </div>
             <p className="text-muted text-sm leading-relaxed">

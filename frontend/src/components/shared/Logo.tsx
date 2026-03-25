@@ -3,7 +3,7 @@ interface LogoProps {
   className?: string
 }
 
-export default function Logo({ size = 24, className = 'text-primary' }: LogoProps) {
+export const Logo = ({ size = 24, className = 'text-primary' }: LogoProps) => {
   return (
     <svg
       width={size}
@@ -17,3 +17,4 @@ export default function Logo({ size = 24, className = 'text-primary' }: LogoProp
     </svg>
   )
 }
+

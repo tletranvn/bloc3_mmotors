@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
-import Logo from '../../shared/Logo'
+import { MotorsLogo}  from '../../shared/LogoM'
 
 interface NavLinkItem {
   label: string
@@ -23,7 +23,7 @@ export default function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
-            <Logo className="text-primary group-hover:text-foreground transition-colors" />
+            <MotorsLogo className="w-6 h-6text-primary group-hover:text-foreground transition-colors" />
             <span className="text-foreground font-display font-extrabold text-lg tracking-widest">
               M-MOTORS
             </span>
