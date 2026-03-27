@@ -25,6 +25,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     ],
     normalizationContext: ['groups' => ['vehicle:read']],
     denormalizationContext: ['groups' => ['vehicle:write']],
+    paginationItemsPerPage: 12,
     paginationMaximumItemsPerPage: 100,
 )]
 #[ORM\Entity(repositoryClass: VehicleRepository::class)]
