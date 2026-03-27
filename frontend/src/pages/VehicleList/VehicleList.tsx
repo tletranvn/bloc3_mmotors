@@ -1,8 +1,11 @@
 import { useVehicles } from '../../hooks/useVehicles';
 import { VehicleCard } from '../../components/features/vehicles/VehicleCard/VehicleCard';
+import { useState } from 'react';
+import { Pagination } from '../../components/shared/Pagination/Pagination';
 
 export function VehicleList() {
-  const { data, isLoading, isError } = useVehicles();
+  const [page, setPage] = useState(1);
+  const { data, isLoading, isError } = useVehicles(page);
 
   if (isLoading) {
     return (
@@ -38,6 +41,11 @@ export function VehicleList() {
           <VehicleCard key={vehicle.id} vehicle={vehicle} />
         ))}
       </div>
+      <Pagination
+        currentPage={page}
+        totalItems={data.totalItems}
+        onPageChange={setPage}
+      />
     </main>
   );
 }
