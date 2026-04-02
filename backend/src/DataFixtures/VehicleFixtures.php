@@ -35,6 +35,31 @@ class VehicleFixtures extends Fixture
             ['Renault', 'Zoé', 2023, 15000, Vehicle::FUEL_ELECTRIC, 'Bleu', '21000', '210', Vehicle::AVAILABILITY_RENTAL],
         ];
 
+        $imageUrls = [
+            'https://upload.wikimedia.org/wikipedia/commons/1/1c/Renault_Clio_V_1X7A0392.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/9/9d/Renault_Megane_E-Tech_IAA_2021_1X7A0073.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/2/29/2023_Renault_Captur_RS_Line_TCe.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/b/b0/Peugeot_208_%282022%29.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/9/9b/2022_-_Peugeot_308_III_%28C%29_-_196.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/2/20/Peugeot_e-3008_Auto_Zuerich_2023_1X7A1014.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/d/d8/Citro%C3%ABn_C3_1.5_BlueHDi_100_%282022%29_%2852917625892%29.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/3/34/Citro%C3%ABn_e-C4_X_Automesse_Ludwigsburg_2023_1X7A0016.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/f/f9/Citroen_C5_Aircross_Plug-in-Hybrid_IMG_5338.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/b/bf/BMW_1-Series_F52_Shishi_01_2022-06-23.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/b/b3/2021_BMW_3-Series_M340i_xDrive.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/9/91/2021_Mercedes-AMG_A_45_W177.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/f/fc/2022_Mercedes-Benz_C-Class_C220d_Avantgarde.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/a/ae/Volkswagen_Golf_VIII_1X7A0353.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/0/05/Volkswagen_Tiguan_rear.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/e/ed/Tesla_Model_3_%282023%29_1X7A1678.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/1/1c/Tesla_Model_Y_1X7A7391.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/d/d8/Toyota_Yaris_Hybrid_GR_Sport_%28XP210%29_Automesse_Ludwigsburg_2022_1X7A5891.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/5/5f/Toyota_C-HR_hybrid_II_GR_Sport_1X7A1663.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/0/03/Audi_A3_silver_Drammen_9.9.2022.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/9/9d/Audi_Q3_Sportback_IMG_3505.jpg',
+            'https://upload.wikimedia.org/wikipedia/commons/c/ca/2023_Renault_Zoe_Handhaving_%2854564687249%29.jpg',
+        ];
+
         foreach ($vehicles as $i => [$brand, $model, $year, $mileage, $fuel, $color, $sale, $rental, $availability]) {
             $vehicle = new Vehicle();
             $vehicle->setBrand($brand)
@@ -47,7 +72,7 @@ class VehicleFixtures extends Fixture
                 ->setRentalPriceMonthly($rental)
                 ->setAvailabilityType($availability)
                 ->setDescription("$brand $model $year — $mileage km, " . strtolower($color))
-                ->setImageUrl('https://placehold.co/600x400?text=' . urlencode("$brand $model"));
+                ->setImageUrl($imageUrls[$i]);
 
             $manager->persist($vehicle);
             $this->addReference('vehicle_' . $i, $vehicle);

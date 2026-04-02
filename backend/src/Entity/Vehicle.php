@@ -25,6 +25,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     ],
     normalizationContext: ['groups' => ['vehicle:read']],
     denormalizationContext: ['groups' => ['vehicle:write']],
+    paginationItemsPerPage: 12,
     paginationMaximumItemsPerPage: 100,
 )]
 #[ORM\Entity(repositoryClass: VehicleRepository::class)]
@@ -323,10 +324,8 @@ class Vehicle
 
     public function removeSubmission(Submission $submission): static
     {
-        if ($this->submissions->removeElement($submission)) {
-            if ($submission->getVehicle() === $this) {
-                $submission->setVehicle(null);
-            }
+        if ($this->submissions->removeElement($submission) && $submission->getVehicle() === $this) {
+            $submission->setVehicle(null);
         }
         return $this;
     }

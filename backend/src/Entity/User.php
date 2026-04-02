@@ -247,10 +247,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function removeSubmission(Submission $submission): static
     {
-        if ($this->submissions->removeElement($submission)) {
-            if ($submission->getClient() === $this) {
-                $submission->setClient(null);
-            }
+        if ($this->submissions->removeElement($submission) && $submission->getClient() === $this) {
+            $submission->setClient(null);
         }
         return $this;
     }

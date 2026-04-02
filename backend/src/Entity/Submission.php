@@ -256,10 +256,8 @@ class Submission
 
     public function removeDocument(Document $document): static
     {
-        if ($this->documents->removeElement($document)) {
-            if ($document->getSubmission() === $this) {
-                $document->setSubmission(null);
-            }
+        if ($this->documents->removeElement($document) && $document->getSubmission() === $this) {
+            $document->setSubmission(null);
         }
         return $this;
     }
