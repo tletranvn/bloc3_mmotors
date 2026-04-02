@@ -27,6 +27,8 @@ export default defineConfig({
         '**/assets/**',
         '**/tests/**',
         'vite.config.ts',
+        '**/services/api/vehicleService.ts',
+        '**/hooks/useVehicles.ts',
       ],
     },
   },
