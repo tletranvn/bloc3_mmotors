@@ -1,8 +1,8 @@
 type LogoVariant = 'light' | 'dark';
 
 interface LogoProps {
-  variant?: LogoVariant;
-  className?: string;
+  readonly variant?: LogoVariant;
+  readonly className?: string;
 }
 
 export const MotorsLogo = ({ variant = 'light', className = 'w-full h-full' }: LogoProps) => (
