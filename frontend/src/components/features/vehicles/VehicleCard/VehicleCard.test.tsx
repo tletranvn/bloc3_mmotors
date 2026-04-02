@@ -84,4 +84,14 @@ describe('VehicleCard', () => {
     const badge = screen.getByText('Vente & Location');
     expect(badge.className).toContain('bg-purple-100');
   });
+
+  it('affiche "—" si aucun prix disponible', () => {
+    renderCard({ ...baseVehicle, salePrice: null, rentalPriceMonthly: null });
+    expect(screen.getByText('—')).toBeInTheDocument();
+  });
+
+  it('affiche le prix mensuel si pas de prix de vente', () => {
+    renderCard({ ...baseVehicle, salePrice: null, rentalPriceMonthly: '299.00' });
+    expect(screen.getByText(/299/)).toBeInTheDocument();
+  });
 });
