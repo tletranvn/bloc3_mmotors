@@ -46,7 +46,8 @@ describe('Header', () => {
 
     const mobileNav = screen.getByRole('navigation', { name: /mobile/i })
     const accueilLink = mobileNav.querySelector('a[href="/"]')
-    await userEvent.click(accueilLink!)
+    expect(accueilLink).toBeInTheDocument()
+    await userEvent.click(accueilLink as Element)
 
     expect(screen.queryByRole('navigation', { name: /mobile/i })).not.toBeInTheDocument()
   })

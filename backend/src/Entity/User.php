@@ -31,6 +31,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\UniqueConstraint(name: 'uniq_identifier_email', fields: ['email'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    public const ROLE_ADMIN = 'ROLE_ADMIN';
+    public const ROLE_USER = 'ROLE_USER';
+
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column]
@@ -87,7 +90,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->submissions = new ArrayCollection();
         $this->createdAt = new \DateTime();
-        $this->roles = ['ROLE_USER'];
+        $this->roles = [self::ROLE_USER];
     }
 
     public function getId(): ?int
@@ -115,7 +118,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRoles(): array
     {
         $roles = $this->roles;
-        $roles[] = 'ROLE_USER';
+        $roles[] = self::ROLE_USER;
         return array_unique($roles);
     }
 

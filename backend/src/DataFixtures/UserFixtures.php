@@ -24,7 +24,7 @@ class UserFixtures extends Fixture
             ->setLastName('M-Motors')
             ->setPhone('0100000000')
             ->setAddress('1 rue du Siège, 75001 Paris')
-            ->setRoles(['ROLE_ADMIN'])
+            ->setRoles([User::ROLE_ADMIN])
             ->setRgpdConsent(true);
         $admin->setPassword($this->hasher->hashPassword($admin, 'Admin123!'));
         $manager->persist($admin);

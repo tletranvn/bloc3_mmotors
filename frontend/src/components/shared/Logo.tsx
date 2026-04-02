@@ -1,6 +1,6 @@
 interface LogoProps {
-  size?: number
-  className?: string
+  readonly size?: number
+  readonly className?: string
 }
 
 export const Logo = ({ size = 24, className = 'text-primary' }: LogoProps) => {
