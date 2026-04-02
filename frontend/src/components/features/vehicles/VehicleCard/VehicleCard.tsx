@@ -11,7 +11,7 @@ function formatPrice(price: string): string {
     style: 'currency',
     currency: 'EUR',
     maximumFractionDigits: 0,
-  }).format(parseFloat(price));
+  }).format(Number.parseFloat(price));
 }
 
 interface Props {
@@ -43,11 +43,11 @@ export function VehicleCard({ vehicle }: Props) {
         <p className="text-muted text-sm">{FUEL_TYPE_LABELS[fuelType] ?? fuelType}</p>
 
         <p className="text-foreground font-semibold text-lg mt-auto">
-          {salePrice
-            ? formatPrice(salePrice)
-            : rentalPriceMonthly
-              ? `${formatPrice(rentalPriceMonthly)} / mois`
-              : '—'}
+          {(() => {
+            if (salePrice) return formatPrice(salePrice);
+            if (rentalPriceMonthly) return `${formatPrice(rentalPriceMonthly)} / mois`;
+            return '—';
+          })()}
         </p>
 
         <Link

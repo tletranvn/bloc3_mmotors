@@ -324,10 +324,8 @@ class Vehicle
 
     public function removeSubmission(Submission $submission): static
     {
-        if ($this->submissions->removeElement($submission)) {
-            if ($submission->getVehicle() === $this) {
-                $submission->setVehicle(null);
-            }
+        if ($this->submissions->removeElement($submission) && $submission->getVehicle() === $this) {
+            $submission->setVehicle(null);
         }
         return $this;
     }

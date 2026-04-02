@@ -3,8 +3,8 @@ import { Link, NavLink } from 'react-router-dom'
 import { MotorsLogo}  from '../../shared/LogoM'
 
 interface NavLinkItem {
-  label: string
-  to: string
+  readonly label: string
+  readonly to: string
 }
 
 const navLinks: NavLinkItem[] = [
