@@ -24,15 +24,20 @@ COPY . .
 # Warmup du cache Symfony en prod
 RUN APP_ENV=prod php bin/console cache:warmup --env=prod
 
-# Permissions
-RUN chown -R www-data:www-data /app/var /app/public
-
 # Config nginx prod (écoute sur $PORT injecté par Heroku)
 COPY deploy/heroku.conf /etc/nginx/http.d/default.conf
 
 # Script de démarrage : migrations + PHP-FPM + nginx
 COPY deploy/start.sh /start.sh
 RUN chmod +x /start.sh
+
+# Permissions : www-data pour tous les répertoires d'exécution
+RUN chown -R www-data:www-data /app/var /app/public \
+    && chown -R www-data:www-data /etc/nginx/http.d \
+    && mkdir -p /var/log/nginx /var/lib/nginx /run/nginx \
+    && chown -R www-data:www-data /var/log/nginx /var/lib/nginx /run/nginx
+
+USER www-data
 
 EXPOSE 80
 

@@ -1,5 +1,4 @@
-# Environnement local
-.env
+# Secrets locaux uniquement (pas .env — Symfony en a besoin au build pour cache:warmup)
 .env.local
 .env.*.local
 
