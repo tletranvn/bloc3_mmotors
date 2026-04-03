@@ -1,0 +1,35 @@
+# Secrets locaux uniquement (pas .env — Symfony en a besoin au build pour cache:warmup)
+.env.local
+.env.*.local
+
+# Clés JWT (ne jamais inclure dans l'image Docker)
+config/jwt/
+
+# Dépendances dev (réinstallées par composer install --no-dev)
+vendor/
+
+# Cache et logs locaux
+var/cache/
+var/log/
+
+# Tests
+tests/
+phpunit.xml
+phpunit.xml.dist
+.phpunit.result.cache
+
+# Outils de qualité
+.php-cs-fixer.php
+phpstan.neon
+psalm.xml
+
+# Docker dev (inutile dans l'image prod)
+docker/
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea/
+.vscode/
