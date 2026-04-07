@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+# Créer un .env minimal pour que Symfony puisse démarrer (bootEnv() requiert ce fichier)
+printf "APP_ENV=prod\n" > /app/.env
+
 # Warmup du cache Symfony pour l'environnement de production
 php bin/console cache:warmup --env=prod
 
