@@ -21,9 +21,6 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interactio
 # Copier le reste du code
 COPY . .
 
-# Warmup du cache Symfony en prod
-RUN APP_ENV=prod php bin/console cache:warmup --env=prod
-
 # Config nginx prod (écoute sur $PORT injecté par Heroku)
 COPY deploy/heroku.conf /etc/nginx/http.d/default.conf
 
