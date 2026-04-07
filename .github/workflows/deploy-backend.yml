@@ -21,7 +21,11 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Login Heroku Container Registry
-        run: echo "$HEROKU_API_KEY" | docker login registry.heroku.com --username=_ --password-stdin
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        with:
+          registry: registry.heroku.com
+          username: _
+          password: ${{ secrets.HEROKU_API_KEY }}
 
       - name: Build image prod
         run: docker build -f backend/deploy/Dockerfile -t registry.heroku.com/$HEROKU_APP_NAME/web ./backend
