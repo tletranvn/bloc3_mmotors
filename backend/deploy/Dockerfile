@@ -29,7 +29,10 @@ COPY deploy/start.sh /start.sh
 RUN chmod +x /start.sh
 
 # Permissions : www-data pour tous les répertoires d'exécution
-RUN chown -R www-data:www-data /app/var /app/public \
+# var/ est gitignorié → absent du build context CI → mkdir obligatoire
+# var/cache et var/log sont créés ici pour éviter des erreurs au premier démarrage
+RUN mkdir -p /app/var/cache/prod /app/var/log \
+    && chown -R www-data:www-data /app/var /app/public \
     && chown -R www-data:www-data /etc/nginx/http.d \
     && mkdir -p /var/log/nginx /var/lib/nginx /run/nginx \
     && chown -R www-data:www-data /var/log/nginx /var/lib/nginx /run/nginx
