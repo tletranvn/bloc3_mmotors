@@ -24,3 +24,10 @@ export const AVAILABILITY_TYPE_BADGE_CLASSES: Record<string, string> = {
   RENTAL: 'bg-green-100 text-green-800',
   BOTH: 'bg-purple-100 text-purple-800',
 };
+
+export const RENTAL_SERVICES: string[] = [
+  'Assurance tous risques',
+  'Assistance 24h/24',
+  'Entretien & révisions',
+  'Contrôle technique',
+];
