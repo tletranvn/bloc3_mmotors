@@ -26,10 +26,37 @@ export type VehicleCollection = {
   totalItems: number;
 };
 
-export async function fetchVehicles(page = 1): Promise<VehicleCollection> {
-  const { data } = await axios.get<VehicleCollection>(`${API_BASE}/vehicles`, {
-    params: { page },
-  });
+export type VehicleFilters = {
+  availabilityType?: string;
+  brand?: string;
+  fuelType?: string;
+  maxPrice?: number;
+};
+
+export async function fetchVehicles(page = 1, filters: VehicleFilters = {}): Promise<VehicleCollection> {
+  // URLSearchParams permet d'envoyer la même clé plusieurs fois
+  // ex: availabilityType[]=SALE&availabilityType[]=BOTH
+  const params = new URLSearchParams();
+  params.append('page', String(page));
+
+  if (filters.availabilityType) {
+    // Inclure les véhicules BOTH quand on filtre par SALE ou RENTAL
+    params.append('availabilityType[]', filters.availabilityType);
+    params.append('availabilityType[]', 'BOTH');
+  }
+
+  if (filters.brand) params.append('brand', filters.brand);
+  if (filters.fuelType) params.append('fuelType', filters.fuelType);
+
+  if (filters.maxPrice && filters.maxPrice > 0) {
+    if (filters.availabilityType === 'RENTAL') {
+      params.append('rentalPriceMonthly[lte]', String(filters.maxPrice));
+    } else {
+      params.append('salePrice[lte]', String(filters.maxPrice));
+    }
+  }
+
+  const { data } = await axios.get<VehicleCollection>(`${API_BASE}/vehicles`, { params });
   return data;
 }
 

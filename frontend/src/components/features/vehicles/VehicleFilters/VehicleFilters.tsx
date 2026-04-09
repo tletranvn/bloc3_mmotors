@@ -26,7 +26,7 @@ interface VehicleFiltersProps {
 
 const MODE_OPTIONS = [
   { value: '', label: 'Tous' },
-  { value: 'SALE', label: "Achat d'occasion" },
+  { value: 'SALE', label: "Achat" },
   { value: 'RENTAL', label: 'Location (LLD)' },
 ];
 
