@@ -2,6 +2,10 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\RangeFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -29,6 +33,12 @@ use Symfony\Component\Serializer\Annotation\Groups;
     paginationMaximumItemsPerPage: 100,
 )]
 #[ORM\Entity(repositoryClass: VehicleRepository::class)]
+#[ORM\Index(name: 'idx_vehicle_availability_type', columns: ['availability_type'])]
+#[ORM\Index(name: 'idx_vehicle_brand', columns: ['brand'])]
+#[ORM\Index(name: 'idx_vehicle_fuel_type', columns: ['fuel_type'])]
+#[ApiFilter(SearchFilter::class, properties: ['availabilityType' => 'exact', 'brand' => 'partial', 'fuelType' => 'exact'])]
+#[ApiFilter(RangeFilter::class, properties: ['salePrice', 'rentalPriceMonthly'])]
+#[ApiFilter(OrderFilter::class, properties: ['salePrice', 'rentalPriceMonthly', 'year'])]
 class Vehicle
 {
     public const FUEL_GASOLINE = 'GASOLINE';
