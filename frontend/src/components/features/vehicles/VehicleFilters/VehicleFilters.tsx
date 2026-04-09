@@ -1,23 +1,11 @@
 import { FUEL_TYPE_LABELS } from '../../../../constants/labels';
+import type { VehicleFiltersState } from './vehicleFiltersTypes';
+import { DEFAULT_FILTERS } from './vehicleFiltersTypes';
 
 const BRANDS = ['Audi', 'BMW', 'Citroën', 'Mercedes', 'Peugeot', 'Renault', 'Tesla', 'Toyota', 'Volkswagen'];
 
 const SALE_MAX_PRICE = 50000;
 const RENTAL_MAX_PRICE = 1500;
-
-export type VehicleFiltersState = {
-  availabilityType: string;
-  brand: string;
-  fuelType: string;
-  maxPrice: number;
-};
-
-export const DEFAULT_FILTERS: VehicleFiltersState = {
-  availabilityType: '',
-  brand: '',
-  fuelType: '',
-  maxPrice: 0,
-};
 
 interface VehicleFiltersProps {
   readonly filters: VehicleFiltersState;

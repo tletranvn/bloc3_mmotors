@@ -5,7 +5,7 @@ import { useDebounce } from '../../hooks/useDebounce';
 import { VehicleCard } from '../../components/features/vehicles/VehicleCard/VehicleCard';
 import { Pagination } from '../../components/shared/Pagination/Pagination';
 import { VehicleFilters } from '../../components/features/vehicles/VehicleFilters/VehicleFilters';
-import type { VehicleFiltersState } from '../../components/features/vehicles/VehicleFilters/VehicleFilters';
+import type { VehicleFiltersState } from '../../components/features/vehicles/VehicleFilters/vehicleFiltersTypes';
 
 function filtersFromParams(params: URLSearchParams): VehicleFiltersState {
   return {
