@@ -30,9 +30,10 @@ export function VehicleCard({ vehicle }: Props) {
       />
       <div className="p-4 flex flex-col gap-3 flex-1">
         <div className="flex items-start justify-between gap-2">
-          <h2 className="font-semibold text-foreground text-base">
-            {brand} {model} <span className="text-muted font-normal">{year}</span>
-          </h2>
+          <div>
+            <h2 className="font-semibold text-foreground text-base">{brand} {model}</h2>
+            <p className="text-muted text-sm">{year}</p>
+          </div>
           <span
             className={`text-xs px-2 py-1 rounded shrink-0 ${AVAILABILITY_TYPE_BADGE_CLASSES[availabilityType] ?? 'bg-background text-muted'}`}
           >
@@ -42,13 +43,21 @@ export function VehicleCard({ vehicle }: Props) {
 
         <p className="text-muted text-sm">{FUEL_TYPE_LABELS[fuelType] ?? fuelType}</p>
 
-        <p className="text-foreground font-semibold text-lg mt-auto">
-          {(() => {
-            if (salePrice) return formatPrice(salePrice);
-            if (rentalPriceMonthly) return `${formatPrice(rentalPriceMonthly)} / mois`;
-            return '—';
-          })()}
-        </p>
+        <div className="mt-auto flex flex-col gap-1">
+          {availabilityType !== 'RENTAL' && salePrice && (
+            <p className="text-foreground font-semibold text-sm">
+              Prix de vente : {formatPrice(salePrice)}
+            </p>
+          )}
+          {availabilityType !== 'SALE' && rentalPriceMonthly && (
+            <p className="text-foreground font-semibold text-sm">
+              Tarif de location : {formatPrice(rentalPriceMonthly)} / mois
+            </p>
+          )}
+          {!salePrice && !rentalPriceMonthly && (
+            <p className="text-foreground font-semibold text-sm">—</p>
+          )}
+        </div>
 
         <Link
           to={`/vehicles/${id}`}

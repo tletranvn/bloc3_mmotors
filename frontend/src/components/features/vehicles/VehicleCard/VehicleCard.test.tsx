@@ -90,8 +90,8 @@ describe('VehicleCard', () => {
     expect(screen.getByText('—')).toBeInTheDocument();
   });
 
-  it('affiche le prix mensuel si pas de prix de vente', () => {
-    renderCard({ ...baseVehicle, salePrice: null, rentalPriceMonthly: '299.00' });
+  it('affiche le prix mensuel si véhicule en location', () => {
+    renderCard({ ...baseVehicle, availabilityType: 'RENTAL', salePrice: null, rentalPriceMonthly: '299.00' });
     expect(screen.getByText(/299/)).toBeInTheDocument();
   });
 });

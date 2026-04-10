@@ -31,3 +31,12 @@ export const RENTAL_SERVICES: string[] = [
   'Entretien & révisions',
   'Contrôle technique',
 ];
+
+export const SALE_GUARANTEES: string[] = [
+  'Garantie constructeur 12 mois minimum',
+  'Contrôle technique à jour',
+  'Historique d\'entretien vérifié',
+  'Véhicule révisé avant livraison',
+  '14 jours satisfait ou remboursé',
+];
+

@@ -2,7 +2,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useVehicle } from '../../hooks/useVehicle';
 import VehicleSpecs from '../../components/vehicles/VehicleSpecs';
 import ServicesList from '../../components/vehicles/ServicesList';
-import { VEHICLE_STATUS_LABELS, AVAILABILITY_TYPE_LABELS, AVAILABILITY_TYPE_BADGE_CLASSES } from '../../constants/labels';
+import { VEHICLE_STATUS_LABELS, AVAILABILITY_TYPE_LABELS, AVAILABILITY_TYPE_BADGE_CLASSES, SALE_GUARANTEES } from '../../constants/labels';
 
 function formatPrice(price: string): string {
   return new Intl.NumberFormat('fr-FR', {
@@ -99,13 +99,13 @@ export default function VehicleDetail() {
           <VehicleSpecs vehicle={vehicle} />
 
           <div className="border-t pt-4 space-y-3">
-            {salePrice && (
+            {availabilityType !== 'RENTAL' && salePrice && (
               <div>
                 <p className="text-xs text-muted uppercase tracking-wide mb-0.5">Prix de vente</p>
                 <p className="text-foreground font-semibold text-xl">{formatPrice(salePrice)}</p>
               </div>
             )}
-            {rentalPriceMonthly && (
+            {availabilityType !== 'SALE' && rentalPriceMonthly && (
               <div>
                 <p className="text-xs text-muted uppercase tracking-wide mb-0.5">Tarif de location</p>
                 <p className="text-foreground font-semibold text-xl">
@@ -116,9 +116,25 @@ export default function VehicleDetail() {
             )}
           </div>
 
+          {(availabilityType === 'SALE' || availabilityType === 'BOTH') && (
+            <>
+              <div>
+                <p className="text-sm font-medium text-foreground mb-2">Garanties</p>
+                <ul className="space-y-1 text-sm">
+                  {SALE_GUARANTEES.map((item) => (
+                    <li key={item} className="flex items-center gap-2">
+                      <span className="text-green-600">✓</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </>
+          )}
+
           {(availabilityType === 'RENTAL' || availabilityType === 'BOTH') && (
             <div>
-              <p className="text-sm font-medium text-foreground mb-2">Services inclus</p>
+              <p className="text-sm font-medium text-foreground mb-2">Services inclus dans la location</p>
               <ServicesList />
             </div>
           )}
