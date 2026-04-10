@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { VehicleList } from './VehicleList';
@@ -6,7 +6,6 @@ import * as useVehiclesModule from '../../hooks/useVehicles';
 
 vi.mock('../../hooks/useVehicles');
 const mockUseVehicles = vi.mocked(useVehiclesModule.useVehicles);
-
 
 const fakeData = {
   member: [
@@ -65,5 +64,48 @@ describe('VehicleList', () => {
     mockUseVehicles.mockReturnValue({ isLoading: false, isError: true, data: undefined } as unknown as ReturnType<typeof useVehiclesModule.useVehicles>);
     renderPage();
     expect(screen.getByRole('alert')).toBeInTheDocument();
+  });
+
+  it('affiche le compteur de véhicules trouvés', () => {
+    mockUseVehicles.mockReturnValue({ isLoading: false, isError: false, data: fakeData } as unknown as ReturnType<typeof useVehiclesModule.useVehicles>);
+    renderPage();
+    expect(screen.getByText('1 véhicule trouvé')).toBeInTheDocument();
+  });
+
+  it('affiche le bouton Filtres sur mobile', () => {
+    mockUseVehicles.mockReturnValue({ isLoading: false, isError: false, data: fakeData } as unknown as ReturnType<typeof useVehiclesModule.useVehicles>);
+    renderPage();
+    expect(screen.getByRole('button', { name: 'Filtres' })).toBeInTheDocument();
+  });
+
+  it('ouvre le drawer mobile au clic sur Filtres', () => {
+    mockUseVehicles.mockReturnValue({ isLoading: false, isError: false, data: fakeData } as unknown as ReturnType<typeof useVehiclesModule.useVehicles>);
+    renderPage();
+    fireEvent.click(screen.getByRole('button', { name: 'Filtres' }));
+    expect(screen.getByRole('button', { name: 'Fermer les filtres' })).toBeInTheDocument();
+  });
+
+  it('ferme le drawer mobile au clic sur Fermer', () => {
+    mockUseVehicles.mockReturnValue({ isLoading: false, isError: false, data: fakeData } as unknown as ReturnType<typeof useVehiclesModule.useVehicles>);
+    renderPage();
+    fireEvent.click(screen.getByRole('button', { name: 'Filtres' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Fermer les filtres' }));
+    expect(screen.queryByRole('button', { name: 'Fermer les filtres' })).not.toBeInTheDocument();
+  });
+
+  it('ferme le drawer mobile au clic sur "Voir les résultats"', () => {
+    mockUseVehicles.mockReturnValue({ isLoading: false, isError: false, data: fakeData } as unknown as ReturnType<typeof useVehiclesModule.useVehicles>);
+    renderPage();
+    fireEvent.click(screen.getByRole('button', { name: 'Filtres' }));
+    fireEvent.click(screen.getByRole('button', { name: /Voir les résultats/i }));
+    expect(screen.queryByRole('button', { name: 'Fermer les filtres' })).not.toBeInTheDocument();
+  });
+
+  it('met à jour la valeur du filtre marque quand on la change', () => {
+    mockUseVehicles.mockReturnValue({ isLoading: false, isError: false, data: fakeData } as unknown as ReturnType<typeof useVehiclesModule.useVehicles>);
+    renderPage();
+    const brandSelect = screen.getByRole('combobox', { name: 'Marque' });
+    fireEvent.change(brandSelect, { target: { value: 'Renault' } });
+    expect(brandSelect).toHaveValue('Renault');
   });
 });
