@@ -19,8 +19,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new Post(security: "is_granted('ROLE_USER')"),
         new Delete(security: "is_granted('ROLE_ADMIN')"),
     ],
-    normalizationContext: ['groups' => ['document:read']],
-    denormalizationContext: ['groups' => ['document:write']],
+    normalizationContext: ['groups' => [self::GROUP_READ]],
+    denormalizationContext: ['groups' => [self::GROUP_WRITE]],
     paginationMaximumItemsPerPage: 50,
 )]
 #[ORM\Entity(repositoryClass: DocumentRepository::class)]
@@ -31,27 +31,30 @@ class Document
     public const TYPE_RIB = 'RIB';
     public const TYPE_PAYSLIP = 'PAYSLIP';
 
+    private const GROUP_READ = self::GROUP_READ;
+    private const GROUP_WRITE = self::GROUP_WRITE;
+
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column]
-    #[Groups(['document:read'])]
+    #[Groups([self::GROUP_READ])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['document:read', 'document:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?string $documentType = null;
 
     #[ORM\Column(length: 500)]
-    #[Groups(['document:read', 'document:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?string $documentUrl = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(['document:read'])]
+    #[Groups([self::GROUP_READ])]
     private ?\DateTimeInterface $uploadedAt = null;
 
     #[ORM\ManyToOne(targetEntity: Submission::class, inversedBy: 'documents')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    #[Groups(['document:read', 'document:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?Submission $submission = null;
 
     public function __construct()

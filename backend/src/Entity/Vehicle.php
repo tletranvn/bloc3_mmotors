@@ -23,12 +23,12 @@ use Symfony\Component\Serializer\Annotation\Groups;
     operations: [
         new GetCollection(),
         new Get(),
-        new Post(security: "is_granted('ROLE_ADMIN')"),
-        new Put(security: "is_granted('ROLE_ADMIN')"),
-        new Delete(security: "is_granted('ROLE_ADMIN')"),
+        new Post(security: self::SECURITY_ADMIN),
+        new Put(security: self::SECURITY_ADMIN),
+        new Delete(security: self::SECURITY_ADMIN),
     ],
-    normalizationContext: ['groups' => ['vehicle:read']],
-    denormalizationContext: ['groups' => ['vehicle:write']],
+    normalizationContext: ['groups' => [self::GROUP_READ]],
+    denormalizationContext: ['groups' => [self::GROUP_WRITE]],
     paginationItemsPerPage: 12,
     paginationMaximumItemsPerPage: 100,
 )]
@@ -56,65 +56,69 @@ class Vehicle
     public const STATUS_ON_LEASE = 'ON_LEASE';
     public const STATUS_MAINTENANCE = 'MAINTENANCE';
 
+    private const GROUP_READ = self::GROUP_READ;
+    private const GROUP_WRITE = self::GROUP_WRITE;
+    private const SECURITY_ADMIN = self::SECURITY_ADMIN;
+
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column]
-    #[Groups(['vehicle:read'])]
+    #[Groups([self::GROUP_READ])]
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?string $brand = null;
 
     #[ORM\Column(length: 100)]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?string $model = null;
 
     #[ORM\Column]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?int $year = null;
 
     #[ORM\Column]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?int $mileage = null;
 
     #[ORM\Column(length: 20)]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?string $fuelType = null;
 
     #[ORM\Column(length: 50, nullable: true)]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?string $color = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?string $salePrice = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?string $rentalPriceMonthly = null;
 
     #[ORM\Column(length: 20)]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?string $availabilityType = null;
 
     #[ORM\Column(length: 20)]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?string $status = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?string $description = null;
 
     #[ORM\Column(length: 500, nullable: true)]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?string $imageUrl = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $deletedAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(['vehicle:read'])]
+    #[Groups([self::GROUP_READ])]
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]

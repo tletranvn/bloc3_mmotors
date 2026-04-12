@@ -3,6 +3,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { VehicleFilters } from './VehicleFilters';
 import { DEFAULT_FILTERS } from './vehicleFiltersTypes';
 
+const BRAND = 'Renault';
+
 const defaultProps = {
   filters: DEFAULT_FILTERS,
   onChange: vi.fn(),
@@ -26,7 +28,7 @@ describe('VehicleFilters', () => {
     const select = screen.getByRole('combobox', { name: 'Marque' });
     expect(select).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'Toutes les marques' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'Renault' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: BRAND })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'BMW' })).toBeInTheDocument();
   });
 
@@ -71,10 +73,10 @@ describe('VehicleFilters', () => {
     const onChange = vi.fn();
     render(<VehicleFilters filters={DEFAULT_FILTERS} onChange={onChange} />);
     fireEvent.change(screen.getByRole('combobox', { name: 'Marque' }), {
-      target: { value: 'Renault' },
+      target: { value: BRAND },
     });
     expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({ brand: 'Renault' })
+      expect.objectContaining({ brand: BRAND })
     );
   });
 
@@ -107,7 +109,7 @@ describe('VehicleFilters', () => {
     const onChange = vi.fn();
     render(
       <VehicleFilters
-        filters={{ availabilityType: 'SALE', brand: 'Renault', fuelType: 'DIESEL', maxPrice: 20000 }}
+        filters={{ availabilityType: 'SALE', brand: BRAND, fuelType: 'DIESEL', maxPrice: 20000 }}
         onChange={onChange}
       />
     );

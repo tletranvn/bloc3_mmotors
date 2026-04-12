@@ -7,13 +7,15 @@ import * as useVehiclesModule from '../../hooks/useVehicles';
 vi.mock('../../hooks/useVehicles');
 const mockUseVehicles = vi.mocked(useVehiclesModule.useVehicles);
 
+const BRAND = 'Renault';
+
 const fakeData = {
   member: [
     {
       '@id': '/api/vehicles/1',
       '@type': 'Vehicle',
       id: 1,
-      brand: 'Renault',
+      brand: BRAND,
       model: 'Clio',
       year: 2022,
       mileage: 25000,
@@ -105,7 +107,7 @@ describe('VehicleList', () => {
     mockUseVehicles.mockReturnValue({ isLoading: false, isError: false, data: fakeData } as unknown as ReturnType<typeof useVehiclesModule.useVehicles>);
     renderPage();
     const brandSelect = screen.getByRole('combobox', { name: 'Marque' });
-    fireEvent.change(brandSelect, { target: { value: 'Renault' } });
-    expect(brandSelect).toHaveValue('Renault');
+    fireEvent.change(brandSelect, { target: { value: BRAND } });
+    expect(brandSelect).toHaveValue(BRAND);
   });
 });
