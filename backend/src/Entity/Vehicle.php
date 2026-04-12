@@ -56,9 +56,9 @@ class Vehicle
     public const STATUS_ON_LEASE = 'ON_LEASE';
     public const STATUS_MAINTENANCE = 'MAINTENANCE';
 
-    private const GROUP_READ = self::GROUP_READ;
-    private const GROUP_WRITE = self::GROUP_WRITE;
-    private const SECURITY_ADMIN = self::SECURITY_ADMIN;
+    private const GROUP_READ = 'vehicle:read';
+    private const GROUP_WRITE = 'vehicle:write';
+    private const SECURITY_ADMIN = "is_granted('ROLE_ADMIN')";
 
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]

@@ -35,9 +35,9 @@ class Submission
     public const STATUS_APPROVED = 'APPROVED';
     public const STATUS_REJECTED = 'REJECTED';
 
-    private const GROUP_READ = self::GROUP_READ;
-    private const GROUP_WRITE = self::GROUP_WRITE;
-    private const GROUP_ADMIN_WRITE = self::GROUP_ADMIN_WRITE;
+    private const GROUP_READ = 'submission:read';
+    private const GROUP_WRITE = 'submission:write';
+    private const GROUP_ADMIN_WRITE = 'submission:admin:write';
 
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]

@@ -34,8 +34,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public const ROLE_ADMIN = 'ROLE_ADMIN';
     public const ROLE_USER = 'ROLE_USER';
 
-    private const GROUP_READ = self::GROUP_READ;
-    private const GROUP_WRITE = self::GROUP_WRITE;
+    private const GROUP_READ = 'user:read';
+    private const GROUP_WRITE = 'user:write';
 
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]

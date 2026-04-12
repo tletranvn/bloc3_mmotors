@@ -31,8 +31,8 @@ class Document
     public const TYPE_RIB = 'RIB';
     public const TYPE_PAYSLIP = 'PAYSLIP';
 
-    private const GROUP_READ = self::GROUP_READ;
-    private const GROUP_WRITE = self::GROUP_WRITE;
+    private const GROUP_READ = 'document:read';
+    private const GROUP_WRITE = 'document:write';
 
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
