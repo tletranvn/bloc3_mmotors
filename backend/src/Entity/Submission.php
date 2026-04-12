@@ -18,11 +18,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
     operations: [
         new GetCollection(security: "is_granted('ROLE_USER')"),
         new Get(security: "is_granted('ROLE_USER') and object.getClient() == user or is_granted('ROLE_ADMIN')"),
-        new Post(security: "is_granted('ROLE_USER')", denormalizationContext: ['groups' => ['submission:write']]),
-        new Put(security: "is_granted('ROLE_ADMIN')", denormalizationContext: ['groups' => ['submission:admin:write']]),
+        new Post(security: "is_granted('ROLE_USER')", denormalizationContext: ['groups' => [self::GROUP_WRITE]]),
+        new Put(security: "is_granted('ROLE_ADMIN')", denormalizationContext: ['groups' => [self::GROUP_ADMIN_WRITE]]),
     ],
-    normalizationContext: ['groups' => ['submission:read']],
-    denormalizationContext: ['groups' => ['submission:write']],
+    normalizationContext: ['groups' => [self::GROUP_READ]],
+    denormalizationContext: ['groups' => [self::GROUP_WRITE]],
 )]
 #[ORM\Entity(repositoryClass: SubmissionRepository::class)]
 #[ORM\UniqueConstraint(name: 'uq_submission_client_vehicle_type', columns: ['client_id', 'vehicle_id', 'type'])]
@@ -35,57 +35,61 @@ class Submission
     public const STATUS_APPROVED = 'APPROVED';
     public const STATUS_REJECTED = 'REJECTED';
 
+    private const GROUP_READ = 'submission:read';
+    private const GROUP_WRITE = 'submission:write';
+    private const GROUP_ADMIN_WRITE = 'submission:admin:write';
+
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column]
-    #[Groups(['submission:read'])]
+    #[Groups([self::GROUP_READ])]
     private ?int $id = null;
 
     #[ORM\Column(length: 20)]
-    #[Groups(['submission:read', 'submission:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?string $type = null;
 
     #[ORM\Column(length: 20)]
-    #[Groups(['submission:read', 'submission:admin:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_ADMIN_WRITE])]
     private ?string $status = null;
 
     #[ORM\Column(length: 100)]
-    #[Groups(['submission:read', 'submission:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?string $profession = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    #[Groups(['submission:read', 'submission:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?string $monthlyIncome = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['submission:read', 'submission:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?int $duration = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['submission:read', 'submission:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?int $annualKm = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
-    #[Groups(['submission:read', 'submission:admin:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_ADMIN_WRITE])]
     private ?string $monthlyTotal = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Groups(['submission:read', 'submission:admin:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_ADMIN_WRITE])]
     private ?string $rejectionReason = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(['submission:read'])]
+    #[Groups([self::GROUP_READ])]
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'submissions')]
-    #[Groups(['submission:read'])]
+    #[Groups([self::GROUP_READ])]
     private ?User $client = null;
 
     #[ORM\ManyToOne(targetEntity: Vehicle::class, inversedBy: 'submissions')]
-    #[Groups(['submission:read', 'submission:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?Vehicle $vehicle = null;
 
     /** @var Collection<int, Document> */

@@ -23,8 +23,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new Post(uriTemplate: '/register', security: "is_granted('PUBLIC_ACCESS')"),
         new Put(security: "is_granted('ROLE_USER') and object == user or is_granted('ROLE_ADMIN')"),
     ],
-    normalizationContext: ['groups' => ['user:read']],
-    denormalizationContext: ['groups' => ['user:write']],
+    normalizationContext: ['groups' => [self::GROUP_READ]],
+    denormalizationContext: ['groups' => [self::GROUP_WRITE]],
 )]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -34,49 +34,52 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public const ROLE_ADMIN = 'ROLE_ADMIN';
     public const ROLE_USER = 'ROLE_USER';
 
+    private const GROUP_READ = 'user:read';
+    private const GROUP_WRITE = 'user:write';
+
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column]
-    #[Groups(['user:read'])]
+    #[Groups([self::GROUP_READ])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?string $email = null;
 
     /** @var list<string> */
     #[ORM\Column(type: Types::JSON)]
-    #[Groups(['user:read'])]
+    #[Groups([self::GROUP_READ])]
     private array $roles = [];
 
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
-    #[Groups(['user:write'])]
+    #[Groups([self::GROUP_WRITE])]
     private ?string $plainPassword = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?string $lastName = null;
 
     #[ORM\Column(length: 20)]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?string $phone = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?string $address = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?bool $rgpdConsent = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(['user:read'])]
+    #[Groups([self::GROUP_READ])]
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
