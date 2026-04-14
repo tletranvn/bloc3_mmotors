@@ -102,6 +102,7 @@ docker compose exec node npm install
 
 ```bash
 docker compose exec php php bin/console doctrine:migrations:migrate
+docker compose exec php php bin/console doctrine:fixtures:load
 ```
 
 ---
@@ -198,12 +199,15 @@ IX. Qualité
 
 X. CI/CD
 
-Deux workflows GitHub Actions se déclenchent automatiquement sur push vers `master`, `main` ou `dev` :
+Trois workflows GitHub Actions :
 
 | Workflow | Déclencheur | Jobs |
 |----------|-------------|------|
-| Backend CI | `backend/**` modifié | PHPUnit |
-| Frontend CI | `frontend/**` modifié | ESLint + TypeScript + Vitest |
+| Backend CI | push/PR sur `master`, `main`, `dev` — `backend/**` modifié | PHPUnit |
+| Frontend CI | push/PR sur `master`, `main`, `dev` — `frontend/**` modifié | ESLint + TypeScript + Vitest |
+| Deploy Backend | push sur `master` ou `main` — `backend/**` modifié | Build Docker + Push Heroku Container Registry + Release |
+
+Le déploiement backend se déclenche automatiquement après chaque merge sur `master` si des fichiers backend ont changé.
 
 ---
 
