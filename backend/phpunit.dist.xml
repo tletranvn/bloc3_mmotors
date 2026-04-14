@@ -33,6 +33,7 @@
         </include>
         <exclude>
             <directory>src/DataFixtures</directory>
+            <directory>src/Repository</directory>
             <file>src/Kernel.php</file>
         </exclude>
 
