@@ -26,7 +26,7 @@ class CreateAdminCommandTest extends TestCase
 
         // L'Application enregistre le QuestionHelper (nécessaire pour les questions interactives)
         $application = new Application();
-        $application->add($command);
+        $application->addCommand($command);
 
         $this->tester = new CommandTester($application->find('app:create-admin'));
     }
