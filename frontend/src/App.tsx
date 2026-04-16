@@ -4,6 +4,7 @@ import Home from './pages/Home/Home'
 import { VehicleList } from './pages/VehicleList/VehicleList'
 import VehicleDetail from './pages/VehicleDetail/VehicleDetail'
 import Register from './pages/Register/Register'
+import Login from './pages/Login/Login'
 
 const router = createBrowserRouter([
   {
@@ -14,6 +15,7 @@ const router = createBrowserRouter([
       { path: 'vehicles', element: <VehicleList /> },
       { path: 'vehicles/:id', element: <VehicleDetail /> },
       { path: 'register', element: <Register /> },
+      { path: 'login', element: <Login /> },
     ],
   },
 ])
