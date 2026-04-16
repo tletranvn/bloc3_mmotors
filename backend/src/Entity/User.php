@@ -8,19 +8,22 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Repository\UserRepository;
+use App\State\UserHashPasswordProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
     operations: [
         new Get(security: "is_granted('ROLE_USER') and object == user or is_granted('ROLE_ADMIN')"),
         new GetCollection(security: "is_granted('ROLE_ADMIN')"),
-        new Post(uriTemplate: '/register', security: "is_granted('PUBLIC_ACCESS')"),
+        new Post(uriTemplate: '/register', security: "is_granted('PUBLIC_ACCESS')", processor: UserHashPasswordProcessor::class),
         new Put(security: "is_granted('ROLE_USER') and object == user or is_granted('ROLE_ADMIN')"),
     ],
     normalizationContext: ['groups' => [self::GROUP_READ]],
@@ -29,6 +32,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\UniqueConstraint(name: 'uniq_identifier_email', fields: ['email'])]
+#[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé.')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     public const ROLE_ADMIN = 'ROLE_ADMIN';
@@ -45,6 +49,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 180)]
     #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
+    #[Assert\NotBlank(message: "L'email est obligatoire.")]
+    #[Assert\Email(message: "Format email invalide.")]
     private ?string $email = null;
 
     /** @var list<string> */
@@ -56,18 +62,31 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[Groups([self::GROUP_WRITE])]
+    #[Assert\NotBlank(message: "Le mot de passe est obligatoire.")]
+    #[Assert\Length(min: 8, minMessage: "Le mot de passe doit faire au moins 8 caractères.")]
+    #[Assert\Regex(
+        pattern: '/^(?=[^A-Z]*[A-Z])(?=\D*\d)(?=[a-zA-Z\d]*[\W_]).{8,}$/',
+        message: "Le mot de passe doit contenir au moins 1 majuscule, 1 chiffre et 1 caractère spécial."
+    )]
     private ?string $plainPassword = null;
 
     #[ORM\Column(length: 50)]
     #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
+    #[Assert\NotBlank(message: "Le prénom est obligatoire.")]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 50)]
     #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
+    #[Assert\NotBlank(message: "Le nom est obligatoire.")]
     private ?string $lastName = null;
 
     #[ORM\Column(length: 20)]
     #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
+    #[Assert\NotBlank(message: "Le téléphone est obligatoire.")]
+    #[Assert\Regex(
+        pattern: '/^0[67]\d{8}$/',
+        message: "Format téléphone invalide. Attendu : 06XXXXXXXX ou 07XXXXXXXX."
+    )]
     private ?string $phone = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -76,6 +95,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(nullable: true)]
     #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
+    #[Assert\IsTrue(message: "Vous devez accepter les conditions d'utilisation.")]
     private ?bool $rgpdConsent = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
