@@ -73,12 +73,19 @@ export default function RegisterForm() {
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
-    // effacer l'erreur du champ modifié
     setErrors((prev) => ({ ...prev, [name]: undefined }))
     setApiError(null)
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleBlur(e: React.FocusEvent<HTMLInputElement>) {
+    const { name } = e.target
+    const fieldErrors = validate(form)
+    if (fieldErrors[name as keyof FormErrors]) {
+      setErrors((prev) => ({ ...prev, [name]: fieldErrors[name as keyof FormErrors] }))
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
 
     const validationErrors = validate(form)
@@ -121,32 +128,34 @@ export default function RegisterForm() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="flex flex-col gap-1">
-          <label htmlFor="firstName" className="text-sm font-semibold text-foreground">
+          <label htmlFor="register-firstName" className="text-sm font-semibold text-foreground">
             Prénom
           </label>
           <input
-            id="firstName"
+            id="register-firstName"
             name="firstName"
             type="text"
             autoComplete="given-name"
             value={form.firstName}
             onChange={handleChange}
+            onBlur={handleBlur}
             className="border border-black/10 rounded px-3 py-2 text-sm text-foreground bg-white focus:outline-none focus:ring-1 focus:ring-foreground"
           />
           {errors.firstName && <p className="text-xs text-red-600">{errors.firstName}</p>}
         </div>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="lastName" className="text-sm font-semibold text-foreground">
+          <label htmlFor="register-lastName" className="text-sm font-semibold text-foreground">
             Nom
           </label>
           <input
-            id="lastName"
+            id="register-lastName"
             name="lastName"
             type="text"
             autoComplete="family-name"
             value={form.lastName}
             onChange={handleChange}
+            onBlur={handleBlur}
             className="border border-black/10 rounded px-3 py-2 text-sm text-foreground bg-white focus:outline-none focus:ring-1 focus:ring-foreground"
           />
           {errors.lastName && <p className="text-xs text-red-600">{errors.lastName}</p>}
@@ -154,65 +163,69 @@ export default function RegisterForm() {
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="email" className="text-sm font-semibold text-foreground">
+        <label htmlFor="register-email" className="text-sm font-semibold text-foreground">
           Email
         </label>
         <input
-          id="email"
+          id="register-email"
           name="email"
           type="email"
           autoComplete="email"
           value={form.email}
           onChange={handleChange}
+          onBlur={handleBlur}
           className="border border-black/10 rounded px-3 py-2 text-sm text-foreground bg-white focus:outline-none focus:ring-1 focus:ring-foreground"
         />
         {errors.email && <p className="text-xs text-red-600">{errors.email}</p>}
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="phone" className="text-sm font-semibold text-foreground">
+        <label htmlFor="register-phone" className="text-sm font-semibold text-foreground">
           Téléphone
         </label>
         <input
-          id="phone"
+          id="register-phone"
           name="phone"
           type="tel"
           autoComplete="tel"
           placeholder="0612345678"
           value={form.phone}
           onChange={handleChange}
+          onBlur={handleBlur}
           className="border border-black/10 rounded px-3 py-2 text-sm text-foreground bg-white focus:outline-none focus:ring-1 focus:ring-foreground"
         />
         {errors.phone && <p className="text-xs text-red-600">{errors.phone}</p>}
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="plainPassword" className="text-sm font-semibold text-foreground">
+        <label htmlFor="register-plainPassword" className="text-sm font-semibold text-foreground">
           Mot de passe
         </label>
         <input
-          id="plainPassword"
+          id="register-plainPassword"
           name="plainPassword"
           type="password"
           autoComplete="new-password"
           value={form.plainPassword}
           onChange={handleChange}
+          onBlur={handleBlur}
           className="border border-black/10 rounded px-3 py-2 text-sm text-foreground bg-white focus:outline-none focus:ring-1 focus:ring-foreground"
         />
         {errors.plainPassword && <p className="text-xs text-red-600">{errors.plainPassword}</p>}
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="confirmPassword" className="text-sm font-semibold text-foreground">
+        <label htmlFor="register-confirmPassword" className="text-sm font-semibold text-foreground">
           Confirmer le mot de passe
         </label>
         <input
-          id="confirmPassword"
+          id="register-confirmPassword"
           name="confirmPassword"
           type="password"
           autoComplete="new-password"
           value={form.confirmPassword}
           onChange={handleChange}
+          onBlur={handleBlur}
           className="border border-black/10 rounded px-3 py-2 text-sm text-foreground bg-white focus:outline-none focus:ring-1 focus:ring-foreground"
         />
         {errors.confirmPassword && <p className="text-xs text-red-600">{errors.confirmPassword}</p>}
