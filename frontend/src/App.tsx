@@ -3,6 +3,7 @@ import Layout from './components/layout/Layout/Layout'
 import Home from './pages/Home/Home'
 import { VehicleList } from './pages/VehicleList/VehicleList'
 import VehicleDetail from './pages/VehicleDetail/VehicleDetail'
+import Register from './pages/Register/Register'
 
 const router = createBrowserRouter([
   {
@@ -12,6 +13,7 @@ const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: 'vehicles', element: <VehicleList /> },
       { path: 'vehicles/:id', element: <VehicleDetail /> },
+      { path: 'register', element: <Register /> },
     ],
   },
 ])
