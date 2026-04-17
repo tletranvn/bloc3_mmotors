@@ -10,6 +10,8 @@ interface FormState {
   firstName: string
   lastName: string
   phone: string
+  address: string
+  rgpdConsent: boolean
 }
 
 interface FormErrors {
@@ -19,6 +21,7 @@ interface FormErrors {
   firstName?: string
   lastName?: string
   phone?: string
+  rgpdConsent?: string
 }
 
 const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/
@@ -47,6 +50,9 @@ function validate(form: FormState): FormErrors {
   } else if (!PHONE_REGEX.test(form.phone)) {
     errors.phone = 'Format invalide. Exemples : 0612345678, 0712345678.'
   }
+  if (!form.rgpdConsent) {
+    errors.rgpdConsent = "Vous devez accepter les conditions d'utilisation."
+  }
 
   return errors
 }
@@ -61,6 +67,8 @@ export default function RegisterForm() {
     firstName: '',
     lastName: '',
     phone: '',
+    address: '',
+    rgpdConsent: false,
   })
 
   const [errors, setErrors] = useState<FormErrors>({})
@@ -71,8 +79,8 @@ export default function RegisterForm() {
   const isFormValid = Object.keys(formErrors).length === 0
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const { name, value } = e.target
-    setForm((prev) => ({ ...prev, [name]: value }))
+    const { name, value, type, checked } = e.target
+    setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
     setErrors((prev) => ({ ...prev, [name]: undefined }))
     setApiError(null)
   }
@@ -104,8 +112,10 @@ export default function RegisterForm() {
         firstName: form.firstName,
         lastName: form.lastName,
         phone: form.phone,
+        address: form.address || undefined,
+        rgpdConsent: form.rgpdConsent,
       })
-      navigate('/login')
+      navigate('/login', { state: { registered: true } })
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 422) {
         setApiError('Cet email est déjà utilisé.')
@@ -198,6 +208,21 @@ export default function RegisterForm() {
       </div>
 
       <div className="flex flex-col gap-1">
+        <label htmlFor="register-address" className="text-sm font-semibold text-foreground">
+          Adresse <span className="text-muted font-normal">(optionnel)</span>
+        </label>
+        <input
+          id="register-address"
+          name="address"
+          type="text"
+          autoComplete="street-address"
+          value={form.address}
+          onChange={handleChange}
+          className="border border-black/10 rounded px-3 py-2 text-sm text-foreground bg-white focus:outline-none focus:ring-1 focus:ring-foreground"
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
         <label htmlFor="register-plainPassword" className="text-sm font-semibold text-foreground">
           Mot de passe
         </label>
@@ -229,6 +254,27 @@ export default function RegisterForm() {
           className="border border-black/10 rounded px-3 py-2 text-sm text-foreground bg-white focus:outline-none focus:ring-1 focus:ring-foreground"
         />
         {errors.confirmPassword && <p className="text-xs text-red-600">{errors.confirmPassword}</p>}
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            id="register-rgpdConsent"
+            name="rgpdConsent"
+            type="checkbox"
+            checked={form.rgpdConsent}
+            onChange={handleChange}
+            className="mt-0.5 accent-primary"
+          />
+          <span className="text-sm text-foreground">
+            J'accepte les{' '}
+            <a href="/conditions" className="underline underline-offset-2 hover:opacity-70 transition-opacity">
+              conditions d'utilisation
+            </a>{' '}
+            et la politique de confidentialité (RGPD).
+          </span>
+        </label>
+        {errors.rgpdConsent && <p className="text-xs text-red-600">{errors.rgpdConsent}</p>}
       </div>
 
       <button

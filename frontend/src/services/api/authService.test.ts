@@ -11,6 +11,7 @@ const validData: RegisterData = {
   firstName: 'Jean',
   lastName: 'Dupont',
   phone: '0612345678',
+  rgpdConsent: true,
 };
 
 beforeEach(() => {

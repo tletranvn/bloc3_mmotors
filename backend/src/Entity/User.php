@@ -95,6 +95,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(nullable: true)]
     #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
+    #[Assert\IsTrue(message: "Vous devez accepter les conditions d'utilisation.")]
     private ?bool $rgpdConsent = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]

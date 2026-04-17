@@ -1,6 +1,9 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 
 export default function Login() {
+  const location = useLocation()
+  const registered = location.state?.registered === true
+
   return (
     <main className="max-w-lg mx-auto px-4 py-16">
       <div className="bg-surface border border-black/8 rounded-lg p-8 flex flex-col gap-6">
@@ -8,6 +11,12 @@ export default function Login() {
           <h1 className="font-display text-2xl font-extrabold text-foreground">Se connecter</h1>
           <p className="text-sm text-muted">Page en cours de développement (US-009).</p>
         </div>
+
+        {registered && (
+          <p role="status" className="text-sm text-green-700 bg-green-50 border border-green-200 rounded px-4 py-3">
+            Compte créé avec succès. Vous pouvez maintenant vous connecter.
+          </p>
+        )}
 
         <p className="text-sm text-muted text-center">
           Pas encore de compte ?{' '}

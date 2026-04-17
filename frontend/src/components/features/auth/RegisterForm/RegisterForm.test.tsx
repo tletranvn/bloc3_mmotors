@@ -31,6 +31,7 @@ async function fillValidForm(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText('Téléphone'), '0612345678')
   await user.type(screen.getByLabelText('Mot de passe'), 'Secure1234!')
   await user.type(screen.getByLabelText('Confirmer le mot de passe'), 'Secure1234!')
+  await user.click(screen.getByRole('checkbox'))
 }
 
 beforeEach(() => {
@@ -110,13 +111,14 @@ describe('RegisterForm', () => {
       firstName: 'Jean',
       lastName: 'Dupont',
       phone: '0612345678',
+      rgpdConsent: true,
     })
 
     renderForm()
     await fillValidForm(user)
     await user.click(screen.getByRole('button', { name: /s'inscrire/i }))
 
-    expect(mockNavigate).toHaveBeenCalledWith('/login')
+    expect(mockNavigate).toHaveBeenCalledWith('/login', { state: { registered: true } })
   })
 
 })

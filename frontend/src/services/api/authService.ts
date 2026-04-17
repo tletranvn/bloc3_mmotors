@@ -8,6 +8,8 @@ export type RegisterData = {
   firstName: string;
   lastName: string;
   phone: string;
+  address?: string;
+  rgpdConsent: boolean;
 };
 
 export type RegisteredUser = {
@@ -16,6 +18,8 @@ export type RegisteredUser = {
   firstName: string;
   lastName: string;
   phone: string;
+  address?: string;
+  rgpdConsent: boolean;
 };
 
 export async function register(data: RegisterData): Promise<RegisteredUser> {
