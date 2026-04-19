@@ -8,6 +8,8 @@ export interface AuthUser {
   email: string
   firstName: string
   lastName: string
+  phone?: string
+  address?: string
   roles: string[]
 }
 
@@ -15,8 +17,10 @@ interface AuthContextType {
   user: AuthUser | null
   token: string | null
   isAuthenticated: boolean
+  isLoading: boolean
   login: (token: string) => Promise<void>
   logout: () => void
+  updateUser: (user: AuthUser) => void
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -25,6 +29,7 @@ export const AuthContext = createContext<AuthContextType | null>(null)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'))
+  const [isLoading, setIsLoading] = useState<boolean>(() => !!localStorage.getItem('token'))
 
   // Au démarrage : si un token existe en localStorage, on vérifie qu'il est encore valide
   useEffect(() => {
@@ -40,6 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem('token')
         setToken(null)
       })
+      .finally(() => setIsLoading(false))
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -59,8 +65,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null)
   }
 
+  function updateUser(updatedUser: AuthUser): void {
+    setUser(updatedUser)
+  }
+
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated: !!user, login, logout }}>
+    <AuthContext.Provider value={{ user, token, isAuthenticated: !!user, isLoading, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   )

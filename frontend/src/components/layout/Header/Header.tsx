@@ -60,9 +60,15 @@ export default function Header() {
           <div className="hidden md:flex items-center gap-3">
             {isAuthenticated ? (
               <>
-                <span className="text-sm font-medium text-foreground">
-                  Bonjour {user?.firstName}
+                <span className="text-sm text-muted">
+                  Bonjour, {user?.firstName}
                 </span>
+                <Link
+                  to="/dashboard"
+                  className="hover-btn bg-surface border border-black/10 text-foreground font-semibold px-4 py-1.5 rounded text-sm"
+                >
+                  Mon espace
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="text-muted hover:text-foreground transition-colors px-3 py-1.5 text-sm font-medium"
@@ -124,9 +130,13 @@ export default function Header() {
             ))}
             {isAuthenticated ? (
               <>
-                <span className="text-sm font-medium text-foreground py-2">
-                  Bonjour {user?.firstName}
-                </span>
+                <Link
+                  to="/dashboard"
+                  onClick={() => setMenuOpen(false)}
+                  className="text-sm font-semibold text-foreground hover:text-primary transition-colors py-2"
+                >
+                  Mon espace — {user?.firstName}
+                </Link>
                 <button
                   onClick={() => { setMenuOpen(false); handleLogout() }}
                   className="text-muted hover:text-foreground text-sm font-medium py-2 transition-colors text-left"

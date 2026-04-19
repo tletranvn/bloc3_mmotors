@@ -24,7 +24,10 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Get(security: "is_granted('ROLE_USER') and object == user or is_granted('ROLE_ADMIN')"),
         new GetCollection(security: "is_granted('ROLE_ADMIN')"),
         new Post(uriTemplate: '/register', security: "is_granted('PUBLIC_ACCESS')", processor: UserHashPasswordProcessor::class),
-        new Put(security: "is_granted('ROLE_USER') and object == user or is_granted('ROLE_ADMIN')"),
+        new Put(
+            security: "is_granted('ROLE_USER') and object == user or is_granted('ROLE_ADMIN')",
+            denormalizationContext: ['groups' => [self::GROUP_UPDATE]],
+        ),
     ],
     normalizationContext: ['groups' => [self::GROUP_READ]],
     denormalizationContext: ['groups' => [self::GROUP_WRITE]],
@@ -40,6 +43,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     private const GROUP_READ = 'user:read';
     private const GROUP_WRITE = 'user:write';
+    private const GROUP_UPDATE = 'user:update';
 
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
@@ -71,17 +75,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $plainPassword = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE, self::GROUP_UPDATE])]
     #[Assert\NotBlank(message: "Le prénom est obligatoire.")]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE, self::GROUP_UPDATE])]
     #[Assert\NotBlank(message: "Le nom est obligatoire.")]
     private ?string $lastName = null;
 
     #[ORM\Column(length: 20)]
-    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE, self::GROUP_UPDATE])]
     #[Assert\NotBlank(message: "Le téléphone est obligatoire.")]
     #[Assert\Regex(
         pattern: '/^0[67]\d{8}$/',
@@ -90,7 +94,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $phone = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE, self::GROUP_UPDATE])]
     private ?string $address = null;
 
     #[ORM\Column(nullable: true)]

@@ -25,7 +25,7 @@ export default function LoginForm() {
       const token = await login(email, password)
       await authLogin(token)
       // Redirige vers la page demandée avant le login, ou /dashboard par défaut
-      const from = (location.state as { from?: string })?.from ?? '/'
+      const from = (location.state as { from?: string })?.from ?? '/dashboard'
       navigate(from, { replace: true })
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 401) {

@@ -5,6 +5,9 @@ import { VehicleList } from './pages/VehicleList/VehicleList'
 import VehicleDetail from './pages/VehicleDetail/VehicleDetail'
 import Register from './pages/Register/Register'
 import Login from './pages/Login/Login'
+import Dashboard from './pages/Dashboard/Dashboard'
+import Profile from './pages/Profile/Profile'
+import ProtectedRoute from './components/shared/ProtectedRoute'
 
 const router = createBrowserRouter([
   {
@@ -16,6 +19,14 @@ const router = createBrowserRouter([
       { path: 'vehicles/:id', element: <VehicleDetail /> },
       { path: 'register', element: <Register /> },
       { path: 'login', element: <Login /> },
+      {
+        path: 'dashboard',
+        element: <ProtectedRoute><Dashboard /></ProtectedRoute>,
+      },
+      {
+        path: 'profile',
+        element: <ProtectedRoute><Profile /></ProtectedRoute>,
+      },
     ],
   },
 ])

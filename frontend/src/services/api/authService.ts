@@ -31,3 +31,17 @@ export async function login(email: string, password: string): Promise<string> {
   const { data } = await axios.post<{ token: string }>(`${API_BASE}/login`, { email, password });
   return data.token;
 }
+
+export type UpdateProfileData = {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  address?: string;
+};
+
+export async function updateProfile(id: number, data: UpdateProfileData, token: string): Promise<import('../../context/AuthContext').AuthUser> {
+  const { data: user } = await axios.put(`${API_BASE}/users/${id}`, data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return user;
+}
