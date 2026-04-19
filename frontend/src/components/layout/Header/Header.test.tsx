@@ -1,7 +1,21 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import Header from './Header'
+import * as useAuthModule from '../../../hooks/useAuth'
+
+vi.mock('../../../hooks/useAuth')
+
+beforeEach(() => {
+  vi.spyOn(useAuthModule, 'useAuth').mockReturnValue({
+    isAuthenticated: false,
+    user: null,
+    token: null,
+    login: vi.fn(),
+    logout: vi.fn(),
+  })
+})
 
 const renderHeader = () =>
   render(
