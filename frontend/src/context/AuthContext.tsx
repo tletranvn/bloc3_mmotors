@@ -19,6 +19,7 @@ interface AuthContextType {
   logout: () => void
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext<AuthContextType | null>(null)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -39,6 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem('token')
         setToken(null)
       })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function login(newToken: string): Promise<void> {
