@@ -1,4 +1,5 @@
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
+import LoginForm from '../../components/features/auth/LoginForm/LoginForm'
 
 export default function Login() {
   const location = useLocation()
@@ -9,7 +10,6 @@ export default function Login() {
       <div className="bg-surface border border-black/8 rounded-lg p-8 flex flex-col gap-6">
         <div className="flex flex-col gap-1">
           <h1 className="font-display text-2xl font-extrabold text-foreground">Se connecter</h1>
-          <p className="text-sm text-muted">Page en cours de développement (US-009).</p>
         </div>
 
         {registered && (
@@ -18,12 +18,7 @@ export default function Login() {
           </p>
         )}
 
-        <p className="text-sm text-muted text-center">
-          Pas encore de compte ?{' '}
-          <Link to="/register" className="text-foreground font-semibold underline underline-offset-2 hover:opacity-70 transition-opacity">
-            S'inscrire
-          </Link>
-        </p>
+        <LoginForm />
       </div>
     </main>
   )

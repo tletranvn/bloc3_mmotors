@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { MotorsLogo}  from '../../shared/LogoM'
+import { useAuth } from '../../../hooks/useAuth'
 
 interface NavLinkItem {
   readonly label: string
@@ -16,6 +17,13 @@ const navLinks: NavLinkItem[] = [
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const { user, isAuthenticated, logout } = useAuth()
+  const navigate = useNavigate()
+
+  function handleLogout() {
+    logout()
+    navigate('/')
+  }
 
   return (
     <header className="bg-background border-b border-black/8 sticky top-0 z-50">
@@ -50,18 +58,34 @@ export default function Header() {
 
           {/* Actions */}
           <div className="hidden md:flex items-center gap-3">
-            <Link
-              to="/login"
-              className="text-muted hover:text-foreground transition-colors px-3 py-1.5 text-sm font-medium"
-            >
-              Se connecter
-            </Link>
-            <Link
-              to="/register"
-              className="hover-btn bg-primary text-white px-4 py-1.5 rounded text-sm font-semibold"
-            >
-              S'inscrire
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <span className="text-sm font-medium text-foreground">
+                  Bonjour {user?.firstName}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="text-muted hover:text-foreground transition-colors px-3 py-1.5 text-sm font-medium"
+                >
+                  Déconnexion
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="text-muted hover:text-foreground transition-colors px-3 py-1.5 text-sm font-medium"
+                >
+                  Se connecter
+                </Link>
+                <Link
+                  to="/register"
+                  className="hover-btn bg-primary text-white px-4 py-1.5 rounded text-sm font-semibold"
+                >
+                  S'inscrire
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Burger menu mobile */}
@@ -98,20 +122,36 @@ export default function Header() {
                 {label}
               </NavLink>
             ))}
-            <Link
-              to="/login"
-              onClick={() => setMenuOpen(false)}
-              className="text-muted hover:text-foreground text-sm font-medium py-2 transition-colors"
-            >
-              Se connecter
-            </Link>
-            <Link
-              to="/register"
-              onClick={() => setMenuOpen(false)}
-              className="hover-btn bg-primary text-white text-center py-2 rounded text-sm font-semibold"
-            >
-              S'inscrire
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <span className="text-sm font-medium text-foreground py-2">
+                  Bonjour {user?.firstName}
+                </span>
+                <button
+                  onClick={() => { setMenuOpen(false); handleLogout() }}
+                  className="text-muted hover:text-foreground text-sm font-medium py-2 transition-colors text-left"
+                >
+                  Déconnexion
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  onClick={() => setMenuOpen(false)}
+                  className="text-muted hover:text-foreground text-sm font-medium py-2 transition-colors"
+                >
+                  Se connecter
+                </Link>
+                <Link
+                  to="/register"
+                  onClick={() => setMenuOpen(false)}
+                  className="hover-btn bg-primary text-white text-center py-2 rounded text-sm font-semibold"
+                >
+                  S'inscrire
+                </Link>
+              </>
+            )}
           </nav>
         )}
       </div>
