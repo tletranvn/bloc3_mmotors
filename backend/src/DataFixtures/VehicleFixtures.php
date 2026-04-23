@@ -4,10 +4,16 @@ namespace App\DataFixtures;
 
 use App\Entity\Vehicle;
 use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Persistence\ObjectManager;
 
-class VehicleFixtures extends Fixture
+class VehicleFixtures extends Fixture implements FixtureGroupInterface
 {
+    public static function getGroups(): array
+    {
+        return ['base'];
+    }
+
     public function load(ObjectManager $manager): void
     {
         $vehicles = [

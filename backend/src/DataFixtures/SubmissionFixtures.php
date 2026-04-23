@@ -6,11 +6,17 @@ use App\Entity\Submission;
 use App\Entity\User;
 use App\Entity\Vehicle;
 use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
-class SubmissionFixtures extends Fixture implements DependentFixtureInterface
+class SubmissionFixtures extends Fixture implements DependentFixtureInterface, FixtureGroupInterface
 {
+    public static function getGroups(): array
+    {
+        return ['base'];
+    }
+
     public function load(ObjectManager $manager): void
     {
         $submissions = [
