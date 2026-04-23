@@ -9,10 +9,12 @@ vi.mock('../../hooks/useAuth')
 function mockUseAuth(isAuthenticated: boolean) {
   vi.spyOn(useAuthModule, 'useAuth').mockReturnValue({
     isAuthenticated,
+    isLoading: false,
     user: null,
     token: null,
     login: vi.fn(),
     logout: vi.fn(),
+    updateUser: vi.fn(),
   })
 }
 

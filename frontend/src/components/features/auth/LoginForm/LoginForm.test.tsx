@@ -21,10 +21,12 @@ beforeEach(() => {
   vi.clearAllMocks()
   vi.spyOn(useAuthModule, 'useAuth').mockReturnValue({
     isAuthenticated: false,
+    isLoading: false,
     user: null,
     token: null,
     login: mockAuthLogin,
     logout: vi.fn(),
+    updateUser: vi.fn(),
   })
 })
 
@@ -59,7 +61,7 @@ describe('LoginForm', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Email ou mot de passe incorrect.')
   })
 
-  it('redirige vers / après connexion réussie', async () => {
+  it('redirige vers /dashboard après connexion réussie', async () => {
     const user = userEvent.setup()
     vi.spyOn(authService, 'login').mockResolvedValue('fake-jwt-token')
     mockAuthLogin.mockResolvedValue(undefined)
@@ -70,7 +72,7 @@ describe('LoginForm', () => {
     await user.click(screen.getByRole('button', { name: /se connecter/i }))
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/', { replace: true })
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard', { replace: true })
     })
   })
 
