@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { register } from '../../../../services/api/authService'
+import { register, login } from '../../../../services/api/authService'
+import { useAuth } from '../../../../hooks/useAuth'
 import axios from 'axios'
 
 interface FormState {
@@ -59,6 +60,7 @@ function validate(form: FormState): FormErrors {
 
 export default function RegisterForm() {
   const navigate = useNavigate()
+  const { login: authLogin } = useAuth()
 
   const [form, setForm] = useState<FormState>({
     email: '',
@@ -115,7 +117,9 @@ export default function RegisterForm() {
         address: form.address || undefined,
         rgpdConsent: form.rgpdConsent,
       })
-      navigate('/login', { state: { registered: true } })
+      const token = await login(form.email, form.plainPassword)
+      await authLogin(token)
+      navigate('/dashboard', { replace: true })
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 422) {
         setApiError('Cet email est déjà utilisé.')

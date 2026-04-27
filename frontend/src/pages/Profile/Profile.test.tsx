@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import Profile from './Profile'
 import * as useAuthModule from '../../hooks/useAuth'
@@ -33,17 +34,24 @@ beforeEach(() => {
   })
 })
 
+const renderProfile = () =>
+  render(
+    <MemoryRouter>
+      <Profile />
+    </MemoryRouter>
+  )
+
 describe('Profile', () => {
 
   it('affiche le champ email pré-rempli en lecture seule', () => {
-    render(<Profile />)
+    renderProfile()
     const emailInput = screen.getByLabelText(/email/i)
     expect(emailInput).toHaveValue('jean@email.com')
     expect(emailInput).toHaveAttribute('readonly')
   })
 
   it('affiche les champs pré-remplis avec les données du user', () => {
-    render(<Profile />)
+    renderProfile()
     expect(screen.getByLabelText('Prénom')).toHaveValue('Jean')
     expect(screen.getByLabelText('Nom')).toHaveValue('Dupont')
     expect(screen.getByLabelText('Téléphone')).toHaveValue('0612345678')
@@ -54,7 +62,7 @@ describe('Profile', () => {
     const user = userEvent.setup()
     vi.spyOn(authService, 'updateProfile').mockResolvedValue({ ...mockUser, firstName: 'Jean' })
 
-    render(<Profile />)
+    renderProfile()
     await user.click(screen.getByRole('button', { name: /enregistrer/i }))
 
     await waitFor(() => {
@@ -73,7 +81,7 @@ describe('Profile', () => {
       address: undefined,
     })
 
-    render(<Profile />)
+    renderProfile()
 
     await user.clear(screen.getByLabelText('Prénom'))
     await user.type(screen.getByLabelText('Prénom'), 'Jeanne')
@@ -108,7 +116,7 @@ describe('Profile', () => {
       })
     )
 
-    render(<Profile />)
+    renderProfile()
 
     await user.click(screen.getByRole('button', { name: /enregistrer/i }))
 
@@ -128,7 +136,7 @@ describe('Profile', () => {
       response: { status: 422 },
     })
 
-    render(<Profile />)
+    renderProfile()
     await user.click(screen.getByRole('button', { name: /enregistrer/i }))
 
     await waitFor(() => {
@@ -140,12 +148,18 @@ describe('Profile', () => {
     const user = userEvent.setup()
     vi.spyOn(authService, 'updateProfile').mockRejectedValue(new Error('network'))
 
-    render(<Profile />)
+    renderProfile()
     await user.click(screen.getByRole('button', { name: /enregistrer/i }))
 
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent(/une erreur est survenue/i)
     })
+  })
+
+  it('affiche le lien "Retour à Mon espace" qui pointe vers /dashboard', () => {
+    renderProfile()
+    const link = screen.getByRole('link', { name: /retour à mon espace/i })
+    expect(link).toHaveAttribute('href', '/dashboard')
   })
 
 })

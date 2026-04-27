@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { updateProfile } from '../../services/api/authService'
 import axios from 'axios'
@@ -42,6 +43,13 @@ export default function Profile() {
 
   return (
     <main className="max-w-lg mx-auto px-4 py-12">
+      <Link
+        to="/dashboard"
+        className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground transition-colors mb-4"
+      >
+        <span aria-hidden="true">←</span> Retour à Mon espace
+      </Link>
+
       <div className="bg-surface border border-black/8 rounded-lg p-8 flex flex-col gap-6">
 
         <h1 className="font-display text-2xl font-extrabold text-foreground">Mon profil</h1>

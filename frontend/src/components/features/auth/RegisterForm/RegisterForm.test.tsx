@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import RegisterForm from './RegisterForm'
 import * as authService from '../../../../services/api/authService'
+import * as useAuthModule from '../../../../hooks/useAuth'
 
 // mock useNavigate
 const mockNavigate = vi.fn()
@@ -12,8 +13,11 @@ vi.mock('react-router-dom', async () => {
   return { ...actual, useNavigate: () => mockNavigate }
 })
 
-// mock authService
+// mock authService et useAuth
 vi.mock('../../../../services/api/authService')
+vi.mock('../../../../hooks/useAuth')
+
+const mockAuthLogin = vi.fn()
 
 function renderForm() {
   return render(
@@ -36,6 +40,15 @@ async function fillValidForm(user: ReturnType<typeof userEvent.setup>) {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  vi.spyOn(useAuthModule, 'useAuth').mockReturnValue({
+    isAuthenticated: false,
+    isLoading: false,
+    user: null,
+    token: null,
+    login: mockAuthLogin,
+    logout: vi.fn(),
+    updateUser: vi.fn(),
+  })
 })
 
 describe('RegisterForm', () => {
@@ -103,7 +116,7 @@ describe('RegisterForm', () => {
     expect(await screen.findByText('Cet email est déjà utilisé.')).toBeInTheDocument()
   })
 
-  it('redirige vers /login après inscription réussie', async () => {
+  it('connecte automatiquement et redirige vers /dashboard après inscription réussie', async () => {
     const user = userEvent.setup()
     vi.spyOn(authService, 'register').mockResolvedValue({
       id: 1,
@@ -113,12 +126,16 @@ describe('RegisterForm', () => {
       phone: '0612345678',
       rgpdConsent: true,
     })
+    vi.spyOn(authService, 'login').mockResolvedValue('fake-jwt-token')
+    mockAuthLogin.mockResolvedValue(undefined)
 
     renderForm()
     await fillValidForm(user)
     await user.click(screen.getByRole('button', { name: /s'inscrire/i }))
 
-    expect(mockNavigate).toHaveBeenCalledWith('/login', { state: { registered: true } })
+    expect(authService.login).toHaveBeenCalledWith('jean@email.com', 'Secure1234!')
+    expect(mockAuthLogin).toHaveBeenCalledWith('fake-jwt-token')
+    expect(mockNavigate).toHaveBeenCalledWith('/dashboard', { replace: true })
   })
 
 })

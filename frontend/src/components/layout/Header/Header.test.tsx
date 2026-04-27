@@ -74,4 +74,31 @@ describe('Header', () => {
     await userEvent.click(burger)
     expect(screen.getByRole('button', { name: /fermer le menu/i })).toBeInTheDocument()
   })
+
+  it('affiche le lien "Mon espace" quand l\'utilisateur est connecté', () => {
+    vi.spyOn(useAuthModule, 'useAuth').mockReturnValue({
+      isAuthenticated: true,
+      isLoading: false,
+      user: {
+        id: 1,
+        email: 'jean@email.com',
+        firstName: 'Jean',
+        lastName: 'Dupont',
+        phone: '0612345678',
+        roles: ['ROLE_USER'],
+      },
+      token: 'fake-token',
+      login: vi.fn(),
+      logout: vi.fn(),
+      updateUser: vi.fn(),
+    })
+
+    renderHeader()
+
+    const link = screen.getByRole('link', { name: /mon espace/i })
+    expect(link).toBeInTheDocument()
+    expect(link).toHaveAttribute('href', '/dashboard')
+    expect(screen.getByText(/bonjour.*jean/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /déconnexion/i })).toBeInTheDocument()
+  })
 })
