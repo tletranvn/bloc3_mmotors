@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { useVehicle } from '../../hooks/useVehicle';
+import { useAuth } from '../../hooks/useAuth';
 import VehicleSpecs from '../../components/vehicles/VehicleSpecs';
 import ServicesList from '../../components/vehicles/ServicesList';
 import { VEHICLE_STATUS_LABELS, AVAILABILITY_TYPE_LABELS, AVAILABILITY_TYPE_BADGE_CLASSES, SALE_GUARANTEES } from '../../constants/labels';
@@ -24,8 +25,7 @@ export default function VehicleDetail() {
   const { id } = useParams<{ id: string }>();
   const { data: vehicle, isLoading, isError } = useVehicle(Number(id));
 
-  // isAuthenticated sera fourni par le contexte auth (Sprint 2)
-  const isAuthenticated = false;
+  const { isAuthenticated } = useAuth();
 
   if (isLoading) {
     return (
@@ -144,7 +144,7 @@ export default function VehicleDetail() {
               to={`/submissions/new?vehicle=${vehicle.id}`}
               className="hover-btn bg-primary text-white text-center text-sm font-semibold px-4 py-2 rounded"
             >
-              Constituer mon dossier
+              Déposer ma demande
             </Link>
           ) : (
             <Link

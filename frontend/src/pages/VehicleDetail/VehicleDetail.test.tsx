@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import VehicleDetail from './VehicleDetail';
 import * as useVehicleModule from '../../hooks/useVehicle';
+import * as useAuthModule from '../../hooks/useAuth';
 import type { Vehicle } from '../../services/api/vehicleService';
 
 // useParams retourne toujours id="1" pour les tests
@@ -12,6 +13,7 @@ vi.mock('react-router-dom', async () => {
 });
 
 vi.mock('../../hooks/useVehicle');
+vi.mock('../../hooks/useAuth');
 const mockUseVehicle = vi.mocked(useVehicleModule.useVehicle);
 
 const baseVehicle: Vehicle = {
@@ -45,7 +47,18 @@ function renderPage() {
   );
 }
 
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks()
+  vi.spyOn(useAuthModule, 'useAuth').mockReturnValue({
+    isAuthenticated: false,
+    isLoading: false,
+    user: null,
+    token: null,
+    login: vi.fn(),
+    logout: vi.fn(),
+    updateUser: vi.fn(),
+  })
+})
 
 describe('VehicleDetail', () => {
   it('affiche le skeleton loader pendant le chargement', () => {
@@ -150,5 +163,22 @@ describe('VehicleDetail', () => {
     mockLoaded(baseVehicle);
     renderPage();
     expect(screen.getByRole('link', { name: /créer un compte/i })).toBeInTheDocument();
+  });
+
+  it('affiche le CTA "Déposer ma demande" si connecté', () => {
+    vi.spyOn(useAuthModule, 'useAuth').mockReturnValue({
+      isAuthenticated: true,
+      isLoading: false,
+      user: { id: 1, email: 'jean@email.com', firstName: 'Jean', lastName: 'Dupont', phone: '0612345678', roles: ['ROLE_USER'] },
+      token: 'fake-token',
+      login: vi.fn(),
+      logout: vi.fn(),
+      updateUser: vi.fn(),
+    })
+    mockLoaded(baseVehicle);
+    renderPage();
+    const link = screen.getByRole('link', { name: /déposer ma demande/i })
+    expect(link).toBeInTheDocument()
+    expect(link).toHaveAttribute('href', '/submissions/new?vehicle=1')
   });
 });
