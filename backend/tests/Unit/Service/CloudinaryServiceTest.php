@@ -3,8 +3,9 @@
 namespace App\Tests\Unit\Service;
 
 use App\Service\CloudinaryService;
-use Cloudinary\Cloudinary;
+use Cloudinary\Api\ApiResponse;
 use Cloudinary\Api\Upload\UploadApi;
+use Cloudinary\Cloudinary;
 use PHPUnit\Framework\TestCase;
 
 class CloudinaryServiceTest extends TestCase
@@ -21,15 +22,20 @@ class CloudinaryServiceTest extends TestCase
         return $cloudinary;
     }
 
+    private function makeApiResponse(array $data): ApiResponse
+    {
+        return new ApiResponse($data, []);
+    }
+
     // --- upload() ---
 
     public function testUploadReturnsSecureUrl(): void
     {
         $uploadApi = $this->createMock(UploadApi::class);
-        $uploadApi->method('upload')->willReturn([
+        $uploadApi->method('upload')->willReturn($this->makeApiResponse([
             'secure_url' => 'https://res.cloudinary.com/test/image/upload/v123/vehicles/car.jpg',
             'public_id'  => 'vehicles/car',
-        ]);
+        ]));
 
         $service = $this->makeService($this->mockCloudinaryWithUploadApi($uploadApi));
 
@@ -44,7 +50,7 @@ class CloudinaryServiceTest extends TestCase
     public function testUploadThrowsWhenNoSecureUrl(): void
     {
         $uploadApi = $this->createMock(UploadApi::class);
-        $uploadApi->method('upload')->willReturn([]);
+        $uploadApi->method('upload')->willReturn($this->makeApiResponse([]));
 
         $service = $this->makeService($this->mockCloudinaryWithUploadApi($uploadApi));
 
@@ -60,7 +66,9 @@ class CloudinaryServiceTest extends TestCase
         $uploadApi->expects($this->once())
             ->method('upload')
             ->with('/tmp/photo.jpg', $this->arrayHasKey('folder'))
-            ->willReturn(['secure_url' => 'https://res.cloudinary.com/test/image/upload/v1/vehicles/photo.jpg']);
+            ->willReturn($this->makeApiResponse([
+                'secure_url' => 'https://res.cloudinary.com/test/image/upload/v1/vehicles/photo.jpg',
+            ]));
 
         $service = $this->makeService($this->mockCloudinaryWithUploadApi($uploadApi));
         $service->upload('/tmp/photo.jpg');
