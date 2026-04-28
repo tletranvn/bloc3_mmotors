@@ -1,0 +1,6 @@
+when@prod:
+    sentry:
+        dsn: '%env(SENTRY_DSN)%'
+        options:
+            # Enable logs to be sent to Sentry
+            enable_logs: true
