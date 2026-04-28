@@ -17,6 +17,7 @@
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@icons-pack/react-simple-icons": "^13.11.1",
+    "@sentry/react": "^10.50.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
