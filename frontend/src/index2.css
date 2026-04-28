@@ -1,0 +1,141 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-background: #E8DFCF;           /* beige sable affirmé — chaud, éco, caractère */
+  --color-surface:    #DDD4C4;           /* beige plus soutenu — cartes, sections */
+  --color-primary:    #ED5729;           /* orange vif — CTAs, accents, icônes */
+  --color-foreground: #3B3B3B;           /* texte principal — charcoal foncé */
+  --color-muted:      #6B6358;           /* texte secondaire — brun chaud foncé, lisible sur beige */
+  --color-danger:     #F43F5E;
+  --color-success:    #10B981;
+
+  --radius: 6px;
+
+  /* Outfit : géométrique*/
+  --font-display: 'Outfit', sans-serif;
+
+  /* DM Sans : corps de texte propre*/
+  --font-sans: 'DM Sans', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Hero animations*/
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Classe animation fade-in-up */
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+/* Délais animations */
+.animation-delay-0   { animation-delay: 0ms; }
+.animation-delay-150 { animation-delay: 150ms; }
+.animation-delay-300 { animation-delay: 300ms; }
+
+/*accessibilité — paramètre système "Réduire les animations") */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* Hover transitions*/
+
+.hover-btn {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+.hover-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--color-primary) 35%, transparent);
+}
+.hover-btn:active {
+  /* Clic : revient légèrement en arrière — feedback tactile */
+  transform: translateY(0px);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+/* Card cliquable */
+.hover-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.hover-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Lien texte avec soulignement glissant d'un trait orange au hover */
+.hover-link {
+  position: relative;
+  transition: color 0.2s ease;
+}
+.hover-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1.5px;
+  background-color: var(--color-primary);
+  /* Le trait grandit de gauche à droite */
+  transition: width 0.25s ease;
+}
+.hover-link:hover::after {
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hover-btn,
+  .hover-card,
+  .hover-link,
+  .hover-link::after {
+    transition: none;
+  }
+  .hover-btn:hover,
+  .hover-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+/* Accessisibilité clavier*/
+
+/* Supprime l'outline navigateur par défaut sur tous les éléments */
+*:focus {
+  outline: none;
+}
+
+/* Anneau de focus visible uniquement à la navigation clavier (pas au clic) */
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: var(--radius);
+}
