@@ -7,6 +7,7 @@ import Register from './pages/Register/Register'
 import Login from './pages/Login/Login'
 import Dashboard from './pages/Dashboard/Dashboard'
 import Profile from './pages/Profile/Profile'
+import SubmissionPage from './pages/SubmissionPage/SubmissionPage'
 import ProtectedRoute from './components/shared/ProtectedRoute'
 
 const router = createBrowserRouter([
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
       {
         path: 'profile',
         element: <ProtectedRoute><Profile /></ProtectedRoute>,
+      },
+      {
+        path: 'submissions/new',
+        element: <ProtectedRoute><SubmissionPage /></ProtectedRoute>,
       },
     ],
   },
