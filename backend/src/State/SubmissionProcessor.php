@@ -7,8 +7,10 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Entity\Submission;
 use App\Entity\Vehicle;
 use Symfony\Bundle\SecurityBundle\Security;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class SubmissionProcessor implements ProcessorInterface
@@ -53,6 +55,10 @@ class SubmissionProcessor implements ProcessorInterface
             }
         }
 
-        return $this->innerProcessor->process($data, $operation, $uriVariables, $context);
+        try {
+            return $this->innerProcessor->process($data, $operation, $uriVariables, $context);
+        } catch (UniqueConstraintViolationException) {
+            throw new ConflictHttpException('Vous avez déjà déposé un dossier pour ce véhicule.');
+        }
     }
 }
