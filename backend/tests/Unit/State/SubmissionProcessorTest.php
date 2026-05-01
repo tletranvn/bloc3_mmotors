@@ -7,6 +7,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Entity\Submission;
 use App\Entity\User;
 use App\Entity\Vehicle;
+use App\Service\RentalCalculatorService;
 use App\State\SubmissionProcessor;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use PHPUnit\Framework\TestCase;
@@ -19,25 +20,30 @@ class SubmissionProcessorTest extends TestCase
 {
     private ProcessorInterface $innerProcessor;
     private Security $security;
+    private RentalCalculatorService $rentalCalculator;
     private SubmissionProcessor $processor;
     private User $user;
 
     protected function setUp(): void
     {
-        $this->innerProcessor = $this->createMock(ProcessorInterface::class);
-        $this->security = $this->createMock(Security::class);
+        $this->innerProcessor   = $this->createMock(ProcessorInterface::class);
+        $this->security         = $this->createMock(Security::class);
+        $this->rentalCalculator = new RentalCalculatorService();
 
         $this->user = new User();
         $this->security->method('getUser')->willReturn($this->user);
 
-        $this->processor = new SubmissionProcessor($this->innerProcessor, $this->security);
+        $this->processor = new SubmissionProcessor($this->innerProcessor, $this->security, $this->rentalCalculator);
     }
 
-    private function makeVehicle(string $status = Vehicle::STATUS_AVAILABLE, string $availability = Vehicle::AVAILABILITY_SALE): Vehicle
+    private function makeVehicle(string $status = Vehicle::STATUS_AVAILABLE, string $availability = Vehicle::AVAILABILITY_SALE, ?string $rentalPrice = null): Vehicle
     {
         $vehicle = new Vehicle();
         $vehicle->setStatus($status);
         $vehicle->setAvailabilityType($availability);
+        if ($rentalPrice !== null) {
+            $vehicle->setRentalPriceMonthly($rentalPrice);
+        }
         return $vehicle;
     }
 
@@ -141,5 +147,97 @@ class SubmissionProcessorTest extends TestCase
 
         $result = $this->processor->process($other, new Post());
         $this->assertSame($other, $result);
+    }
+
+    public function testThrowsIfRentalMissingDuration(): void
+    {
+        $this->expectException(BadRequestHttpException::class);
+
+        $vehicle = $this->makeVehicle(Vehicle::STATUS_AVAILABLE, Vehicle::AVAILABILITY_RENTAL, '350');
+        $submission = new Submission();
+        $submission->setVehicle($vehicle);
+        $submission->setType(Submission::TYPE_RENTAL);
+        $submission->setAnnualKm(10000);
+        // duration non définie
+
+        $this->processor->process($submission, new Post());
+    }
+
+    public function testThrowsIfRentalMissingAnnualKm(): void
+    {
+        $this->expectException(BadRequestHttpException::class);
+
+        $vehicle = $this->makeVehicle(Vehicle::STATUS_AVAILABLE, Vehicle::AVAILABILITY_RENTAL, '350');
+        $submission = new Submission();
+        $submission->setVehicle($vehicle);
+        $submission->setType(Submission::TYPE_RENTAL);
+        $submission->setDuration(36);
+        // annualKm non défini
+
+        $this->processor->process($submission, new Post());
+    }
+
+    public function testThrowsIfRentalInvalidDuration(): void
+    {
+        $this->expectException(BadRequestHttpException::class);
+
+        $vehicle = $this->makeVehicle(Vehicle::STATUS_AVAILABLE, Vehicle::AVAILABILITY_RENTAL, '350');
+        $submission = new Submission();
+        $submission->setVehicle($vehicle);
+        $submission->setType(Submission::TYPE_RENTAL);
+        $submission->setDuration(12); // valeur non autorisée
+        $submission->setAnnualKm(10000);
+
+        $this->processor->process($submission, new Post());
+    }
+
+    public function testThrowsIfRentalInvalidAnnualKm(): void
+    {
+        $this->expectException(BadRequestHttpException::class);
+
+        $vehicle = $this->makeVehicle(Vehicle::STATUS_AVAILABLE, Vehicle::AVAILABILITY_RENTAL, '350');
+        $submission = new Submission();
+        $submission->setVehicle($vehicle);
+        $submission->setType(Submission::TYPE_RENTAL);
+        $submission->setDuration(36);
+        $submission->setAnnualKm(99999); // valeur non autorisée
+
+        $this->processor->process($submission, new Post());
+    }
+
+    public function testRentalCalculatesMonthlyTotalServerSide(): void
+    {
+        $vehicle = $this->makeVehicle(Vehicle::STATUS_AVAILABLE, Vehicle::AVAILABILITY_RENTAL, '350');
+        $submission = new Submission();
+        $submission->setVehicle($vehicle);
+        $submission->setType(Submission::TYPE_RENTAL);
+        $submission->setDuration(36);
+        $submission->setAnnualKm(10000);
+        // Le client envoie un montant arbitraire — le backend doit l'ignorer et recalculer
+        $submission->setMonthlyTotal('999.99');
+
+        $this->innerProcessor->expects($this->once())->method('process')->willReturn($submission);
+
+        $this->processor->process($submission, new Post());
+
+        // 350 × 1.00 + 0 = 350.00
+        $this->assertSame('350.00', $submission->getMonthlyTotal());
+    }
+
+    public function testRentalAcceptsBothAvailabilityType(): void
+    {
+        $vehicle = $this->makeVehicle(Vehicle::STATUS_AVAILABLE, Vehicle::AVAILABILITY_BOTH, '400');
+        $submission = new Submission();
+        $submission->setVehicle($vehicle);
+        $submission->setType(Submission::TYPE_RENTAL);
+        $submission->setDuration(24);
+        $submission->setAnnualKm(15000);
+
+        $this->innerProcessor->expects($this->once())->method('process')->willReturn($submission);
+
+        $this->processor->process($submission, new Post());
+
+        // 400 × 1.10 + 15 = 440 + 15 = 455.00
+        $this->assertSame('455.00', $submission->getMonthlyTotal());
     }
 }
