@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Repository\SubmissionRepository;
+use App\State\SubmissionProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -18,7 +19,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     operations: [
         new GetCollection(security: "is_granted('ROLE_USER')"),
         new Get(security: "is_granted('ROLE_USER') and object.getClient() == user or is_granted('ROLE_ADMIN')"),
-        new Post(security: "is_granted('ROLE_USER')", denormalizationContext: ['groups' => [self::GROUP_WRITE]]),
+        new Post(security: "is_granted('ROLE_USER')", denormalizationContext: ['groups' => [self::GROUP_WRITE]], processor: SubmissionProcessor::class),
         new Put(security: "is_granted('ROLE_ADMIN')", denormalizationContext: ['groups' => [self::GROUP_ADMIN_WRITE]]),
     ],
     normalizationContext: ['groups' => [self::GROUP_READ]],

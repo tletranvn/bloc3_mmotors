@@ -147,12 +147,21 @@ export default function VehicleDetail() {
               Déposer ma demande
             </Link>
           ) : (
-            <Link
-              to="/register"
-              className="hover-btn bg-primary text-white text-center text-sm font-semibold px-4 py-2 rounded"
-            >
-              Créer un compte pour constituer mon dossier
-            </Link>
+            <div className="flex flex-col gap-2">
+              <Link
+                to="/login"
+                state={{ from: `/submissions/new?vehicle=${vehicle.id}` }}
+                className="hover-btn bg-primary text-white text-center text-sm font-semibold px-4 py-2 rounded"
+              >
+                Se connecter pour constituer mon dossier
+              </Link>
+              <Link
+                to="/register"
+                className="hover-btn bg-surface border border-black/10 text-foreground text-center text-sm font-semibold px-4 py-2 rounded"
+              >
+                Créer un compte
+              </Link>
+            </div>
           )}
 
           <Link
