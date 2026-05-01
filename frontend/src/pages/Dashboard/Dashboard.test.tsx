@@ -27,10 +27,9 @@ beforeEach(() => {
     logout: vi.fn(),
     updateUser: vi.fn(),
   })
-  vi.spyOn(useSubmissionsModule, 'useSubmissions').mockReturnValue({
-    data: [],
-    isLoading: false,
-  } as any)
+  vi.spyOn(useSubmissionsModule, 'useSubmissions').mockReturnValue(
+    { data: [], isLoading: false } as unknown as ReturnType<typeof useSubmissionsModule.useSubmissions>
+  )
 })
 
 const renderDashboard = () =>
