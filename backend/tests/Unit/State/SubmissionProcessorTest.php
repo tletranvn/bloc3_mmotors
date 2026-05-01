@@ -1,0 +1,145 @@
+<?php
+
+namespace App\Tests\Unit\State;
+
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\State\ProcessorInterface;
+use App\Entity\Submission;
+use App\Entity\User;
+use App\Entity\Vehicle;
+use App\State\SubmissionProcessor;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use PHPUnit\Framework\TestCase;
+use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+
+class SubmissionProcessorTest extends TestCase
+{
+    private ProcessorInterface $innerProcessor;
+    private Security $security;
+    private SubmissionProcessor $processor;
+    private User $user;
+
+    protected function setUp(): void
+    {
+        $this->innerProcessor = $this->createMock(ProcessorInterface::class);
+        $this->security = $this->createMock(Security::class);
+
+        $this->user = new User();
+        $this->security->method('getUser')->willReturn($this->user);
+
+        $this->processor = new SubmissionProcessor($this->innerProcessor, $this->security);
+    }
+
+    private function makeVehicle(string $status = Vehicle::STATUS_AVAILABLE, string $availability = Vehicle::AVAILABILITY_SALE): Vehicle
+    {
+        $vehicle = new Vehicle();
+        $vehicle->setStatus($status);
+        $vehicle->setAvailabilityType($availability);
+        return $vehicle;
+    }
+
+    public function testAssignsClientAndForcesStatusPending(): void
+    {
+        $vehicle = $this->makeVehicle();
+
+        $submission = new Submission();
+        $submission->setVehicle($vehicle);
+        $submission->setType(Submission::TYPE_SALE);
+
+        $this->innerProcessor->expects($this->once())->method('process')->willReturn($submission);
+
+        $this->processor->process($submission, new Post());
+
+        $this->assertSame($this->user, $submission->getClient());
+        $this->assertSame(Submission::STATUS_PENDING, $submission->getStatus());
+    }
+
+    public function testThrowsBadRequestIfNoVehicle(): void
+    {
+        $this->expectException(BadRequestHttpException::class);
+
+        $submission = new Submission();
+        $submission->setType(Submission::TYPE_SALE);
+
+        $this->processor->process($submission, new Post());
+    }
+
+    public function testThrowsIfVehicleNotAvailable(): void
+    {
+        $this->expectException(UnprocessableEntityHttpException::class);
+
+        $vehicle = $this->makeVehicle(Vehicle::STATUS_SOLD);
+        $submission = new Submission();
+        $submission->setVehicle($vehicle);
+        $submission->setType(Submission::TYPE_SALE);
+
+        $this->processor->process($submission, new Post());
+    }
+
+    public function testThrowsIfVehicleNotAvailableForSale(): void
+    {
+        $this->expectException(UnprocessableEntityHttpException::class);
+
+        $vehicle = $this->makeVehicle(Vehicle::STATUS_AVAILABLE, Vehicle::AVAILABILITY_RENTAL);
+        $submission = new Submission();
+        $submission->setVehicle($vehicle);
+        $submission->setType(Submission::TYPE_SALE);
+
+        $this->processor->process($submission, new Post());
+    }
+
+    public function testThrowsIfVehicleNotAvailableForRental(): void
+    {
+        $this->expectException(UnprocessableEntityHttpException::class);
+
+        $vehicle = $this->makeVehicle(Vehicle::STATUS_AVAILABLE, Vehicle::AVAILABILITY_SALE);
+        $submission = new Submission();
+        $submission->setVehicle($vehicle);
+        $submission->setType(Submission::TYPE_RENTAL);
+
+        $this->processor->process($submission, new Post());
+    }
+
+    public function testAcceptsSaleWhenAvailabilityIsBoth(): void
+    {
+        $vehicle = $this->makeVehicle(Vehicle::STATUS_AVAILABLE, Vehicle::AVAILABILITY_BOTH);
+        $submission = new Submission();
+        $submission->setVehicle($vehicle);
+        $submission->setType(Submission::TYPE_SALE);
+
+        $this->innerProcessor->expects($this->once())->method('process')->willReturn($submission);
+
+        $this->processor->process($submission, new Post());
+        $this->assertSame(Submission::STATUS_PENDING, $submission->getStatus());
+    }
+
+    public function testThrowsConflictOnDuplicateSubmission(): void
+    {
+        $this->expectException(ConflictHttpException::class);
+
+        $vehicle = $this->makeVehicle();
+        $submission = new Submission();
+        $submission->setVehicle($vehicle);
+        $submission->setType(Submission::TYPE_SALE);
+
+        $driverException = $this->createMock(\Doctrine\DBAL\Driver\Exception::class);
+        $this->innerProcessor
+            ->method('process')
+            ->willThrowException(new UniqueConstraintViolationException($driverException, null));
+
+        $this->processor->process($submission, new Post());
+    }
+
+    public function testDelegatesNonSubmissionData(): void
+    {
+        $other = new \stdClass();
+
+        $this->innerProcessor->expects($this->once())->method('process')->with($other)->willReturn($other);
+
+        $result = $this->processor->process($other, new Post());
+        $this->assertSame($other, $result);
+    }
+}

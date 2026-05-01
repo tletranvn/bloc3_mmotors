@@ -3,8 +3,10 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import Dashboard from './Dashboard'
 import * as useAuthModule from '../../hooks/useAuth'
+import * as useSubmissionsModule from '../../hooks/useSubmissions'
 
 vi.mock('../../hooks/useAuth')
+vi.mock('../../hooks/useSubmissions')
 
 const mockUser = {
   id: 1,
@@ -25,6 +27,10 @@ beforeEach(() => {
     logout: vi.fn(),
     updateUser: vi.fn(),
   })
+  vi.spyOn(useSubmissionsModule, 'useSubmissions').mockReturnValue({
+    data: [],
+    isLoading: false,
+  } as any)
 })
 
 const renderDashboard = () =>

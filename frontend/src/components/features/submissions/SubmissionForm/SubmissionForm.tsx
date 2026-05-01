@@ -46,7 +46,7 @@ export default function SubmissionForm({ vehicle, type }: Props) {
       await uploadDocument(token, submission.id, identityFile!, 'IDENTITY')
       await uploadDocument(token, submission.id, addressFile!, 'ADDRESS')
 
-      navigate('/dashboard', { replace: true, state: { successMessage: 'Votre dossier a bien été soumis. Notre équipe vous contactera prochainement.' } })
+      navigate('/dashboard/submissions', { replace: true, state: { successMessage: 'Votre dossier a bien été soumis. Notre équipe vous contactera prochainement.' } })
     } catch (err) {
       if (axios.isAxiosError(err)) {
         const detail = err.response?.data?.detail ?? err.response?.data?.['hydra:description']

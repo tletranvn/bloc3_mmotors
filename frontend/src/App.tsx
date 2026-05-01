@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider, Navigate, useLocation } from 'react-router-dom'
 import Layout from './components/layout/Layout/Layout'
 import Home from './pages/Home/Home'
 import { VehicleList } from './pages/VehicleList/VehicleList'
@@ -9,6 +9,11 @@ import Dashboard from './pages/Dashboard/Dashboard'
 import Profile from './pages/Profile/Profile'
 import SubmissionPage from './pages/SubmissionPage/SubmissionPage'
 import ProtectedRoute from './components/shared/ProtectedRoute'
+
+function DashboardSubmissionsStub() {
+  const { state } = useLocation()
+  return <Navigate to="/dashboard" replace state={state} />
+}
 
 const router = createBrowserRouter([
   {
@@ -31,6 +36,10 @@ const router = createBrowserRouter([
       {
         path: 'submissions/new',
         element: <ProtectedRoute><SubmissionPage /></ProtectedRoute>,
+      },
+      {
+        path: 'dashboard/submissions',
+        element: <ProtectedRoute><DashboardSubmissionsStub /></ProtectedRoute>,
       },
     ],
   },
