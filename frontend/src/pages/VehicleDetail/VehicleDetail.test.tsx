@@ -122,7 +122,8 @@ describe('VehicleDetail', () => {
   it('affiche le tarif de location avec son libellé', () => {
     mockLoaded({ ...baseVehicle, availabilityType: 'RENTAL', salePrice: null, rentalPriceMonthly: '299.00' });
     renderPage();
-    expect(screen.getByText(/tarif de location/i)).toBeInTheDocument();
+    expect(screen.getByText(/location longue durée/i)).toBeInTheDocument();
+    expect(screen.getByText(/à partir de/i)).toBeInTheDocument();
     expect(screen.getByText(/299/)).toBeInTheDocument();
   });
 
@@ -130,7 +131,7 @@ describe('VehicleDetail', () => {
     mockLoaded({ ...baseVehicle, availabilityType: 'BOTH', rentalPriceMonthly: '350.00' });
     renderPage();
     expect(screen.getByText(/prix de vente/i)).toBeInTheDocument();
-    expect(screen.getByText(/tarif de location/i)).toBeInTheDocument();
+    expect(screen.getByText(/location longue durée/i)).toBeInTheDocument();
   });
 
   it('affiche les services inclus si le véhicule est en location', () => {
@@ -179,6 +180,6 @@ describe('VehicleDetail', () => {
     renderPage();
     const link = screen.getByRole('link', { name: /déposer ma demande/i })
     expect(link).toBeInTheDocument()
-    expect(link).toHaveAttribute('href', '/submissions/new?vehicle=1')
+    expect(link).toHaveAttribute('href', '/submissions/new?vehicle=1&type=SALE')
   });
 });
