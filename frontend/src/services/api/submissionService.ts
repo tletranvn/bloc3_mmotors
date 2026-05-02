@@ -8,6 +8,9 @@ export type Submission = {
   status: string
   profession: string
   monthlyIncome: string
+  monthlyTotal: string | null
+  duration: number | null
+  annualKm: number | null
   createdAt: string
 }
 
@@ -30,16 +33,28 @@ export async function fetchSubmissions(token: string): Promise<Submission[]> {
   return data.member
 }
 
-export async function createSubmission(
-  token: string,
-  vehicleIri: string,
-  type: string,
-  profession: string,
-  monthlyIncome: string,
-): Promise<Submission> {
+export interface CreateSubmissionParams {
+  vehicleIri: string
+  type: string
+  profession: string
+  monthlyIncome: string
+  duration?: number
+  annualKm?: number
+  monthlyTotal?: string
+}
+
+export async function createSubmission(token: string, params: CreateSubmissionParams): Promise<Submission> {
   const { data } = await axios.post<Submission>(
     `${API_BASE}/submissions`,
-    { vehicle: vehicleIri, type, profession, monthlyIncome },
+    {
+      vehicle: params.vehicleIri,
+      type: params.type,
+      profession: params.profession,
+      monthlyIncome: params.monthlyIncome,
+      ...(params.duration !== undefined && { duration: params.duration }),
+      ...(params.annualKm !== undefined && { annualKm: params.annualKm }),
+      ...(params.monthlyTotal !== undefined && { monthlyTotal: params.monthlyTotal }),
+    },
     { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/ld+json' } },
   )
   return data
