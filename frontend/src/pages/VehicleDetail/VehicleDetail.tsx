@@ -107,9 +107,9 @@ export default function VehicleDetail() {
             )}
             {availabilityType !== 'SALE' && rentalPriceMonthly && (
               <div>
-                <p className="text-xs text-muted uppercase tracking-wide mb-0.5">Tarif de location</p>
+                <p className="text-xs text-muted uppercase tracking-wide mb-0.5">Location longue durée</p>
                 <p className="text-foreground font-semibold text-xl">
-                  {formatPrice(rentalPriceMonthly)}{' '}
+                  À partir de {formatPrice(rentalPriceMonthly)}{' '}
                   <span className="text-sm font-normal text-muted">/ mois</span>
                 </p>
               </div>
@@ -140,17 +140,29 @@ export default function VehicleDetail() {
           )}
 
           {isAuthenticated ? (
-            <Link
-              to={`/submissions/new?vehicle=${vehicle.id}`}
-              className="hover-btn bg-primary text-white text-center text-sm font-semibold px-4 py-2 rounded"
-            >
-              Déposer ma demande
-            </Link>
+            <div className="flex flex-col gap-2">
+              {(availabilityType === 'SALE' || availabilityType === 'BOTH') && (
+                <Link
+                  to={`/submissions/new?vehicle=${vehicle.id}&type=SALE`}
+                  className="hover-btn bg-primary text-white text-center text-sm font-semibold px-4 py-2 rounded"
+                >
+                  {availabilityType === 'BOTH' ? 'Dossier d\'achat' : 'Déposer ma demande'}
+                </Link>
+              )}
+              {(availabilityType === 'RENTAL' || availabilityType === 'BOTH') && (
+                <Link
+                  to={`/submissions/new?vehicle=${vehicle.id}&type=RENTAL`}
+                  className="hover-btn bg-surface border border-black/10 text-foreground text-center text-sm font-semibold px-4 py-2 rounded"
+                >
+                  {availabilityType === 'BOTH' ? 'Dossier de location' : 'Déposer ma demande'}
+                </Link>
+              )}
+            </div>
           ) : (
             <div className="flex flex-col gap-2">
               <Link
                 to="/login"
-                state={{ from: `/submissions/new?vehicle=${vehicle.id}` }}
+                state={{ from: `/submissions/new?vehicle=${vehicle.id}&type=${availabilityType === 'RENTAL' ? 'RENTAL' : 'SALE'}` }}
                 className="hover-btn bg-primary text-white text-center text-sm font-semibold px-4 py-2 rounded"
               >
                 Se connecter pour constituer mon dossier
