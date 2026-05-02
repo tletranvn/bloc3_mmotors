@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Entity\Submission;
 use App\Entity\Vehicle;
+use App\Service\RentalCalculatorService;
 use Symfony\Bundle\SecurityBundle\Security;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -19,6 +20,7 @@ class SubmissionProcessor implements ProcessorInterface
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private ProcessorInterface $innerProcessor,
         private Security $security,
+        private RentalCalculatorService $rentalCalculator,
     ) {
     }
 
@@ -53,6 +55,29 @@ class SubmissionProcessor implements ProcessorInterface
             if ($availabilityType !== Vehicle::AVAILABILITY_RENTAL && $availabilityType !== Vehicle::AVAILABILITY_BOTH) {
                 throw new UnprocessableEntityHttpException('Ce véhicule n\'est pas disponible à la location.');
             }
+
+            $duration  = $data->getDuration();
+            $annualKm  = $data->getAnnualKm();
+            $basePrice = $vehicle->getRentalPriceMonthly();
+
+            if ($duration === null || $annualKm === null) {
+                throw new BadRequestHttpException('La durée et le kilométrage annuel sont obligatoires pour une location.');
+            }
+
+            if (!in_array($duration, RentalCalculatorService::VALID_DURATIONS, true)) {
+                throw new BadRequestHttpException('Durée invalide. Valeurs acceptées : 24, 36, 48 mois.');
+            }
+
+            if (!in_array($annualKm, RentalCalculatorService::VALID_ANNUAL_KM, true)) {
+                throw new BadRequestHttpException('Kilométrage invalide. Valeurs acceptées : 10000, 15000, 20000, 25000 km/an.');
+            }
+
+            if ($basePrice === null) {
+                throw new UnprocessableEntityHttpException('Ce véhicule n\'a pas de tarif de location défini.');
+            }
+
+            // Calcul autoritaire côté serveur — on ne fait pas confiance au montant envoyé par le client.
+            $data->setMonthlyTotal($this->rentalCalculator->calculateMonthlyTotal($basePrice, $duration, $annualKm));
         }
 
         try {

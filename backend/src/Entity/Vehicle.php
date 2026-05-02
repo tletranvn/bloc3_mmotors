@@ -94,6 +94,8 @@ class Vehicle
     #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?string $salePrice = null;
 
+    // Prix de référence LLD : correspond à 36 mois / 10 000 km/an (coefficients neutres).
+    // Le loyer réel est recalculé par RentalCalculatorService selon la durée et le kilométrage choisis.
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
     private ?string $rentalPriceMonthly = null;

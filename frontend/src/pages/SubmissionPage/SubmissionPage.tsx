@@ -72,8 +72,11 @@ export default function SubmissionPage() {
               )}
               {vehicle.rentalPriceMonthly && (
                 <span className="font-semibold text-foreground text-sm">
-                  Loyer : {formatPrice(vehicle.rentalPriceMonthly)} / mois
+                  Loyer de base : {formatPrice(vehicle.rentalPriceMonthly)} / mois
                 </span>
+              )}
+              {vehicle.rentalPriceMonthly && (
+                <span className="text-xs text-muted">(référence 36 mois / 10 000 km)</span>
               )}
             </div>
             <Link
