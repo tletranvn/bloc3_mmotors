@@ -13,9 +13,9 @@ export default function Dashboard() {
   const rejected = submissions.filter(s => s.status === 'REJECTED').length
 
   const stats = [
-    { label: 'En attente', count: pending,  color: 'text-yellow-600 bg-yellow-50 border-yellow-200' },
-    { label: 'Validés',    count: approved, color: 'text-green-700 bg-green-50 border-green-200' },
-    { label: 'Refusés',    count: rejected, color: 'text-red-600 bg-red-50 border-red-200' },
+    { label: 'En attente', count: pending,  color: 'text-yellow-600 bg-yellow-50 border-yellow-200', status: 'PENDING'   },
+    { label: 'Validés',    count: approved, color: 'text-green-700 bg-green-50 border-green-200',   status: 'APPROVED'  },
+    { label: 'Refusés',    count: rejected, color: 'text-red-600 bg-red-50 border-red-200',         status: 'REJECTED'  },
   ]
 
   return (
@@ -35,19 +35,25 @@ export default function Dashboard() {
       </div>
 
       <section aria-label="Mes dossiers">
-        <h2 className="font-display text-lg font-bold text-foreground mb-4">Mes dossiers</h2>
+        <div className="flex items-center justify-between mb-4">
+          <Link to="/dashboard/submissions" className="font-display text-lg font-bold text-foreground hover:opacity-70 !underline underline-offset-2">
+            Mes dossiers
+          </Link>
+        </div>
         {isLoading ? (
           <p className="text-muted text-sm">Chargement...</p>
         ) : (
           <>
             <ul className="grid grid-cols-1 sm:grid-cols-3 gap-4 list-none p-0">
-              {stats.map(({ label, count, color }) => (
-                <li
-                  key={label}
-                  className={`border rounded-lg px-6 py-5 flex flex-col gap-1 ${color}`}
-                >
-                  <span className="text-3xl font-extrabold font-display">{count}</span>
-                  <span className="text-sm font-medium">{label}</span>
+              {stats.map(({ label, count, color, status }) => (
+                <li key={label}>
+                  <Link
+                    to={`/dashboard/submissions?status=${status}`}
+                    className={`border rounded-lg px-6 py-5 flex flex-col gap-1 hover:opacity-80 transition-opacity ${color}`}
+                  >
+                    <span className="text-3xl font-extrabold font-display">{count}</span>
+                    <span className="text-sm font-medium">{label}</span>
+                  </Link>
                 </li>
               ))}
             </ul>
