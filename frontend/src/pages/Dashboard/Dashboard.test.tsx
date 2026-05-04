@@ -70,11 +70,35 @@ describe('Dashboard', () => {
     expect(link).toHaveAttribute('href', '/vehicles')
   })
 
+  it('affiche le lien "Mes dossiers"', () => {
+    renderDashboard()
+    const link = screen.getByRole('link', { name: /mes dossiers/i })
+    expect(link).toBeInTheDocument()
+    expect(link).toHaveAttribute('href', '/dashboard/submissions')
+  })
+
   it('affiche le lien "Mon profil"', () => {
     renderDashboard()
     const link = screen.getByRole('link', { name: /mon profil/i })
     expect(link).toBeInTheDocument()
     expect(link).toHaveAttribute('href', '/profile')
+  })
+
+  it('affiche "Chargement..." pendant isLoading', () => {
+    vi.spyOn(useSubmissionsModule, 'useSubmissions').mockReturnValue(
+      { data: undefined, isLoading: true } as unknown as ReturnType<typeof useSubmissionsModule.useSubmissions>
+    )
+    renderDashboard()
+    expect(screen.getByText(/chargement/i)).toBeInTheDocument()
+  })
+
+  it('affiche le message de succès transmis via location.state', () => {
+    render(
+      <MemoryRouter initialEntries={[{ pathname: '/dashboard', state: { successMessage: 'Dossier soumis avec succès !' } }]}>
+        <Dashboard />
+      </MemoryRouter>
+    )
+    expect(screen.getByRole('alert')).toHaveTextContent('Dossier soumis avec succès !')
   })
 
 })

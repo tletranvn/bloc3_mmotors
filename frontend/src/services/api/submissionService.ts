@@ -2,6 +2,22 @@ import axios from 'axios'
 
 const API_BASE = `${import.meta.env.VITE_API_URL ?? 'http://localhost:8082'}/api`
 
+export type SubmissionDocument = {
+  id: number
+  documentType: string
+  documentUrl: string
+  uploadedAt: string
+}
+
+export type SubmissionVehicle = {
+  '@id': string
+  id: number
+  brand: string
+  model: string
+  year: number
+  imageUrl: string | null
+}
+
 export type Submission = {
   id: number
   type: string
@@ -11,7 +27,10 @@ export type Submission = {
   monthlyTotal: string | null
   duration: number | null
   annualKm: number | null
+  rejectionReason: string | null
   createdAt: string
+  vehicle: SubmissionVehicle | null
+  documents: SubmissionDocument[]
 }
 
 export type DocumentUploadResult = {
@@ -31,6 +50,13 @@ export async function fetchSubmissions(token: string): Promise<Submission[]> {
     headers: { Authorization: `Bearer ${token}` },
   })
   return data.member
+}
+
+export async function fetchSubmission(token: string, id: number): Promise<Submission> {
+  const { data } = await axios.get<Submission>(`${API_BASE}/submissions/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  return data
 }
 
 export interface CreateSubmissionParams {

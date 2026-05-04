@@ -54,7 +54,7 @@ class Document
 
     #[ORM\ManyToOne(targetEntity: Submission::class, inversedBy: 'documents')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
+    #[Groups([self::GROUP_WRITE])]
     private ?Submission $submission = null;
 
     public function __construct()
