@@ -45,7 +45,7 @@ export default function Profile() {
     <main className="max-w-lg mx-auto px-4 py-12">
       <Link
         to="/dashboard"
-        className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground transition-colors mb-4"
+        className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground transition-colors !underline underline-offset-2 mb-4"
       >
         <span aria-hidden="true">←</span> Retour à Mon espace
       </Link>
