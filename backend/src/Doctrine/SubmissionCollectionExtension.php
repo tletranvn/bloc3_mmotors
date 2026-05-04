@@ -34,6 +34,7 @@ class SubmissionCollectionExtension implements QueryCollectionExtensionInterface
         $rootAlias = $queryBuilder->getRootAliases()[0];
         $queryBuilder
             ->andWhere(sprintf('%s.client = :current_user', $rootAlias))
-            ->setParameter('current_user', $this->security->getUser());
+            ->setParameter('current_user', $this->security->getUser())
+            ->addOrderBy(sprintf('%s.createdAt', $rootAlias), 'DESC');
     }
 }

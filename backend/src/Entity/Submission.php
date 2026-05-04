@@ -22,7 +22,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new Post(security: "is_granted('ROLE_USER')", denormalizationContext: ['groups' => [self::GROUP_WRITE]], processor: SubmissionProcessor::class),
         new Put(security: "is_granted('ROLE_ADMIN')", denormalizationContext: ['groups' => [self::GROUP_ADMIN_WRITE]]),
     ],
-    normalizationContext: ['groups' => [self::GROUP_READ]],
+    // vehicle:read et document:read permettent d'embarquer les champs liés dans la réponse API.
+    normalizationContext: ['groups' => [self::GROUP_READ, 'vehicle:read', 'document:read']],
     denormalizationContext: ['groups' => [self::GROUP_WRITE]],
 )]
 #[ORM\Entity(repositoryClass: SubmissionRepository::class)]
@@ -95,6 +96,7 @@ class Submission
 
     /** @var Collection<int, Document> */
     #[ORM\OneToMany(targetEntity: Document::class, mappedBy: 'submission', cascade: ['remove'])]
+    #[Groups([self::GROUP_READ])]
     private Collection $documents;
 
     #[ORM\OneToOne(targetEntity: RentalContract::class, mappedBy: 'submission')]
