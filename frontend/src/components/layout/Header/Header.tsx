@@ -63,6 +63,14 @@ export default function Header() {
                 <span className="text-sm text-muted">
                   Bonjour, {user?.firstName}
                 </span>
+                {user?.roles?.includes('ROLE_ADMIN') && (
+                  <Link
+                    to="/admin/vehicles"
+                    className="hover-btn bg-surface border border-black/10 text-foreground font-semibold px-4 py-1.5 rounded text-sm"
+                  >
+                    Admin
+                  </Link>
+                )}
                 <Link
                   to="/dashboard"
                   className="hover-btn bg-surface border border-black/10 text-foreground font-semibold px-4 py-1.5 rounded text-sm"
@@ -130,6 +138,15 @@ export default function Header() {
             ))}
             {isAuthenticated ? (
               <>
+                {user?.roles?.includes('ROLE_ADMIN') && (
+                  <Link
+                    to="/admin/vehicles"
+                    onClick={() => setMenuOpen(false)}
+                    className="text-sm font-semibold text-foreground hover:text-primary transition-colors py-2"
+                  >
+                    Admin — Véhicules
+                  </Link>
+                )}
                 <Link
                   to="/dashboard"
                   onClick={() => setMenuOpen(false)}

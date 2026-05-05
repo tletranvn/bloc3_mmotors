@@ -10,6 +10,7 @@ import Profile from './pages/Profile/Profile'
 import SubmissionPage from './pages/SubmissionPage/SubmissionPage'
 import SubmissionsList from './pages/SubmissionsList/SubmissionsList'
 import SubmissionDetail from './pages/SubmissionsList/SubmissionDetail'
+import VehicleManagement from './pages/Admin/VehicleManagement/VehicleManagement'
 import ProtectedRoute from './components/shared/ProtectedRoute'
 
 const router = createBrowserRouter([
@@ -41,6 +42,10 @@ const router = createBrowserRouter([
       {
         path: 'dashboard/submissions/:id',
         element: <ProtectedRoute><SubmissionDetail /></ProtectedRoute>,
+      },
+      {
+        path: 'admin/vehicles',
+        element: <ProtectedRoute><VehicleManagement /></ProtectedRoute>,
       },
     ],
   },
