@@ -11,6 +11,7 @@ use App\Service\RentalCalculatorService;
 use App\State\SubmissionProcessor;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
@@ -21,6 +22,7 @@ class SubmissionProcessorTest extends TestCase
     private ProcessorInterface $innerProcessor;
     private Security $security;
     private RentalCalculatorService $rentalCalculator;
+    private LoggerInterface $logger;
     private SubmissionProcessor $processor;
     private User $user;
 
@@ -29,11 +31,12 @@ class SubmissionProcessorTest extends TestCase
         $this->innerProcessor   = $this->createMock(ProcessorInterface::class);
         $this->security         = $this->createMock(Security::class);
         $this->rentalCalculator = new RentalCalculatorService();
+        $this->logger           = $this->createMock(LoggerInterface::class);
 
         $this->user = new User();
         $this->security->method('getUser')->willReturn($this->user);
 
-        $this->processor = new SubmissionProcessor($this->innerProcessor, $this->security, $this->rentalCalculator);
+        $this->processor = new SubmissionProcessor($this->innerProcessor, $this->security, $this->rentalCalculator, $this->logger);
     }
 
     private function makeVehicle(string $status = Vehicle::STATUS_AVAILABLE, string $availability = Vehicle::AVAILABILITY_SALE, ?string $rentalPrice = null): Vehicle
