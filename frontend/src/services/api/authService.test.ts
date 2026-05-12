@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import axios from 'axios';
+import apiClient from './axiosInstance';
 import { register, type RegisterData } from './authService';
 
-vi.mock('axios');
-const mockedAxios = vi.mocked(axios);
+vi.mock('./axiosInstance');
+const mockedAxios = vi.mocked(apiClient);
 
 const validData: RegisterData = {
   email: 'jean.dupont@email.com',
@@ -27,7 +27,7 @@ describe('register', () => {
     await register(validData);
 
     expect(mockedAxios.post).toHaveBeenCalledWith(
-      expect.stringContaining('/api/register'),
+      expect.stringContaining('/register'),
       validData
     );
   });
