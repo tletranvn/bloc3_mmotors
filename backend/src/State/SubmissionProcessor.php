@@ -5,8 +5,10 @@ namespace App\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Entity\Submission;
+use App\Entity\User;
 use App\Entity\Vehicle;
 use App\Service\RentalCalculatorService;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -21,6 +23,7 @@ class SubmissionProcessor implements ProcessorInterface
         private ProcessorInterface $innerProcessor,
         private Security $security,
         private RentalCalculatorService $rentalCalculator,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -81,8 +84,22 @@ class SubmissionProcessor implements ProcessorInterface
         }
 
         try {
-            return $this->innerProcessor->process($data, $operation, $uriVariables, $context);
+            $result = $this->innerProcessor->process($data, $operation, $uriVariables, $context);
+
+            $this->logger->info('Submission créée', [
+                'submission_id' => $data->getId(),
+                'vehicle_id' => $vehicle->getId(),
+                'type' => $data->getType(),
+            ]);
+
+            return $result;
         } catch (UniqueConstraintViolationException) {
+            $client = $this->security->getUser();
+            $this->logger->warning('Submission bloquée : doublon', [
+                'vehicle_id' => $vehicle->getId(),
+                'user_id' => $client instanceof User ? $client->getId() : null,
+            ]);
+
             throw new ConflictHttpException('Vous avez déjà déposé un dossier pour ce véhicule.');
         }
     }
