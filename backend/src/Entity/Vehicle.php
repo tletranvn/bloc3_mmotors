@@ -13,6 +13,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Repository\VehicleRepository;
+use App\State\VehicleDeleteProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -25,7 +26,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new Get(),
         new Post(security: self::SECURITY_ADMIN),
         new Put(security: self::SECURITY_ADMIN),
-        new Delete(security: self::SECURITY_ADMIN),
+        new Delete(security: self::SECURITY_ADMIN, processor: VehicleDeleteProcessor::class),
     ],
     normalizationContext: ['groups' => [self::GROUP_READ]],
     denormalizationContext: ['groups' => [self::GROUP_WRITE]],

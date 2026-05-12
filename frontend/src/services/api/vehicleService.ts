@@ -64,3 +64,43 @@ export async function fetchVehicleById(id: number): Promise<Vehicle> {
   const { data } = await axios.get<Vehicle>(`${API_BASE}/vehicles/${id}`);
   return data;
 }
+
+export type VehiclePayload = {
+  brand: string;
+  model: string;
+  year: number;
+  mileage: number;
+  fuelType: string;
+  color: string | null;
+  availabilityType: string;
+  status: string;
+  description: string | null;
+  imageUrl: string | null;
+  salePrice: string | null;
+  rentalPriceMonthly: string | null;
+};
+
+const authHeaders = (token: string) => ({
+  Authorization: `Bearer ${token}`,
+  'Content-Type': 'application/ld+json',
+});
+
+export async function createVehicle(token: string, payload: VehiclePayload): Promise<Vehicle> {
+  const { data } = await axios.post<Vehicle>(`${API_BASE}/vehicles`, payload, {
+    headers: authHeaders(token),
+  });
+  return data;
+}
+
+export async function updateVehicle(token: string, id: number, payload: VehiclePayload): Promise<Vehicle> {
+  const { data } = await axios.put<Vehicle>(`${API_BASE}/vehicles/${id}`, payload, {
+    headers: authHeaders(token),
+  });
+  return data;
+}
+
+export async function deleteVehicle(token: string, id: number): Promise<void> {
+  await axios.delete(`${API_BASE}/vehicles/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
