@@ -71,12 +71,12 @@ class Submission
 
     #[ORM\Column(nullable: true)]
     #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
-    #[Assert\Choice(choices: [24, 36, 48], allowNull: true, message: 'Durée invalide. Valeurs acceptées : 24, 36, 48 mois.')]
+    #[Assert\Choice(choices: [24, 36, 48], message: 'Durée invalide. Valeurs acceptées : 24, 36, 48 mois.')]
     private ?int $duration = null;
 
     #[ORM\Column(nullable: true)]
     #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
-    #[Assert\Choice(choices: [10000, 15000, 20000, 25000], allowNull: true, message: 'Kilométrage invalide. Valeurs acceptées : 10000, 15000, 20000, 25000 km/an.')]
+    #[Assert\Choice(choices: [10000, 15000, 20000, 25000], message: 'Kilométrage invalide. Valeurs acceptées : 10000, 15000, 20000, 25000 km/an.')]
     private ?int $annualKm = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
