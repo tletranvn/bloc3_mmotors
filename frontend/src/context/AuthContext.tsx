@@ -1,7 +1,5 @@
 import { createContext, useEffect, useState } from 'react'
-import axios from 'axios'
-
-const API_BASE = `${import.meta.env.VITE_API_URL ?? 'http://localhost:8082'}/api`
+import apiClient from '../services/api/axiosInstance'
 
 export interface AuthUser {
   id: number
@@ -35,14 +33,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!token) return
 
-    axios
-      .get<AuthUser>(`${API_BASE}/me`, {
+    apiClient
+      .get<AuthUser>('/me', {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setUser(res.data))
       .catch(() => {
-        // Token expiré ou invalide → on nettoie
-        localStorage.removeItem('token')
+        // L'interceptor 401 nettoie déjà le token et redirige vers /login.
+        // Ici on reset juste l'état local au cas où l'erreur ne serait pas un 401.
         setToken(null)
       })
       .finally(() => setIsLoading(false))
@@ -53,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('token', newToken)
     setToken(newToken)
 
-    const res = await axios.get<AuthUser>(`${API_BASE}/me`, {
+    const res = await apiClient.get<AuthUser>('/me', {
       headers: { Authorization: `Bearer ${newToken}` },
     })
     setUser(res.data)

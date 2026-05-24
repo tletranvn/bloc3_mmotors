@@ -14,6 +14,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
     operations: [
@@ -49,6 +50,8 @@ class Submission
 
     #[ORM\Column(length: 20)]
     #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
+    #[Assert\NotBlank(message: 'Le type est obligatoire.')]
+    #[Assert\Choice(choices: [self::TYPE_SALE, self::TYPE_RENTAL], message: 'Type invalide. Valeurs acceptées : SALE, RENTAL.')]
     private ?string $type = null;
 
     #[ORM\Column(length: 20)]
@@ -61,14 +64,19 @@ class Submission
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
+    #[Assert\NotBlank(message: 'Les revenus mensuels sont obligatoires.')]
+    #[Assert\Positive(message: 'Les revenus mensuels doivent être positifs.')]
+    #[Assert\LessThan(value: 1000000, message: 'Montant irréaliste.')]
     private ?string $monthlyIncome = null;
 
     #[ORM\Column(nullable: true)]
     #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
+    #[Assert\Choice(choices: [24, 36, 48], message: 'Durée invalide. Valeurs acceptées : 24, 36, 48 mois.')]
     private ?int $duration = null;
 
     #[ORM\Column(nullable: true)]
     #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
+    #[Assert\Choice(choices: [10000, 15000, 20000, 25000], message: 'Kilométrage invalide. Valeurs acceptées : 10000, 15000, 20000, 25000 km/an.')]
     private ?int $annualKm = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]

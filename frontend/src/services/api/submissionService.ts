@@ -1,6 +1,4 @@
-import axios from 'axios'
-
-const API_BASE = `${import.meta.env.VITE_API_URL ?? 'http://localhost:8082'}/api`
+import apiClient from './axiosInstance'
 
 export type SubmissionDocument = {
   id: number
@@ -46,14 +44,14 @@ export type SubmissionCollection = {
 }
 
 export async function fetchSubmissions(token: string): Promise<Submission[]> {
-  const { data } = await axios.get<SubmissionCollection>(`${API_BASE}/submissions`, {
+  const { data } = await apiClient.get<SubmissionCollection>(`/submissions`, {
     headers: { Authorization: `Bearer ${token}` },
   })
   return data.member
 }
 
 export async function fetchSubmission(token: string, id: number): Promise<Submission> {
-  const { data } = await axios.get<Submission>(`${API_BASE}/submissions/${id}`, {
+  const { data } = await apiClient.get<Submission>(`/submissions/${id}`, {
     headers: { Authorization: `Bearer ${token}` },
   })
   return data
@@ -70,8 +68,8 @@ export interface CreateSubmissionParams {
 }
 
 export async function createSubmission(token: string, params: CreateSubmissionParams): Promise<Submission> {
-  const { data } = await axios.post<Submission>(
-    `${API_BASE}/submissions`,
+  const { data } = await apiClient.post<Submission>(
+    `/submissions`,
     {
       vehicle: params.vehicleIri,
       type: params.type,
@@ -96,8 +94,8 @@ export async function uploadDocument(
   formData.append('file', file)
   formData.append('documentType', documentType)
 
-  const { data } = await axios.post<DocumentUploadResult>(
-    `${API_BASE}/submissions/${submissionId}/documents`,
+  const { data } = await apiClient.post<DocumentUploadResult>(
+    `/submissions/${submissionId}/documents`,
     formData,
     { headers: { Authorization: `Bearer ${token}` } },
   )

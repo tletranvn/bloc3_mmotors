@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_BASE = `${import.meta.env.VITE_API_URL ?? 'http://localhost:8082'}/api`;
+import apiClient from './axiosInstance';
 
 export type RegisterData = {
   email: string;
@@ -23,12 +21,12 @@ export type RegisteredUser = {
 };
 
 export async function register(data: RegisterData): Promise<RegisteredUser> {
-  const { data: user } = await axios.post<RegisteredUser>(`${API_BASE}/register`, data);
+  const { data: user } = await apiClient.post<RegisteredUser>(`/register`, data);
   return user;
 }
 
 export async function login(email: string, password: string): Promise<string> {
-  const { data } = await axios.post<{ token: string }>(`${API_BASE}/login`, { email, password });
+  const { data } = await apiClient.post<{ token: string }>(`/login`, { email, password });
   return data.token;
 }
 
@@ -40,7 +38,7 @@ export type UpdateProfileData = {
 };
 
 export async function updateProfile(id: number, data: UpdateProfileData, token: string): Promise<import('../../context/AuthContext').AuthUser> {
-  const { data: user } = await axios.put(`${API_BASE}/users/${id}`, data, {
+  const { data: user } = await apiClient.put(`/users/${id}`, data, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return user;

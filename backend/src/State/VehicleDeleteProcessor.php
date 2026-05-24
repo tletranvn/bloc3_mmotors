@@ -8,6 +8,7 @@ use App\Entity\Submission;
 use App\Entity\Vehicle;
 use App\Repository\SubmissionRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class VehicleDeleteProcessor implements ProcessorInterface
@@ -15,6 +16,7 @@ class VehicleDeleteProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private SubmissionRepository $submissionRepository,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -30,11 +32,20 @@ class VehicleDeleteProcessor implements ProcessorInterface
         ]);
 
         if (count($activeSubmissions) > 0) {
+            $this->logger->warning('Vehicle soft-delete bloqué : dossiers actifs', [
+                'vehicle_id' => $data->getId(),
+                'active_submissions_count' => count($activeSubmissions),
+            ]);
+
             throw new ConflictHttpException('Ce véhicule ne peut pas être supprimé car il est lié à des dossiers actifs (en attente ou validés).');
         }
 
         $data->setDeletedAt(new \DateTime());
         $this->entityManager->flush();
+
+        $this->logger->info('Vehicle soft-delete effectué', [
+            'vehicle_id' => $data->getId(),
+        ]);
 
         return null;
     }

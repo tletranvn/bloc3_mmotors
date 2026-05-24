@@ -1,12 +1,12 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import axios from 'axios'
+import apiClient from '../services/api/axiosInstance'
 import { AuthProvider } from './AuthContext'
 import { useAuth } from '../hooks/useAuth'
 
-vi.mock('axios')
-const mockedAxios = vi.mocked(axios)
+vi.mock('../services/api/axiosInstance')
+const mockedAxios = vi.mocked(apiClient)
 
 const mockUser = {
   id: 1,

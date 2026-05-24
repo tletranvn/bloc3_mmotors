@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_BASE = `${import.meta.env.VITE_API_URL ?? 'http://localhost:8082'}/api`;
+import apiClient from './axiosInstance';
 
 export type Vehicle = {
   '@id': string;
@@ -56,12 +54,12 @@ export async function fetchVehicles(page = 1, filters: VehicleFilters = {}): Pro
     }
   }
 
-  const { data } = await axios.get<VehicleCollection>(`${API_BASE}/vehicles`, { params });
+  const { data } = await apiClient.get<VehicleCollection>(`/vehicles`, { params });
   return data;
 }
 
 export async function fetchVehicleById(id: number): Promise<Vehicle> {
-  const { data } = await axios.get<Vehicle>(`${API_BASE}/vehicles/${id}`);
+  const { data } = await apiClient.get<Vehicle>(`/vehicles/${id}`);
   return data;
 }
 
@@ -86,21 +84,21 @@ const authHeaders = (token: string) => ({
 });
 
 export async function createVehicle(token: string, payload: VehiclePayload): Promise<Vehicle> {
-  const { data } = await axios.post<Vehicle>(`${API_BASE}/vehicles`, payload, {
+  const { data } = await apiClient.post<Vehicle>(`/vehicles`, payload, {
     headers: authHeaders(token),
   });
   return data;
 }
 
 export async function updateVehicle(token: string, id: number, payload: VehiclePayload): Promise<Vehicle> {
-  const { data } = await axios.put<Vehicle>(`${API_BASE}/vehicles/${id}`, payload, {
+  const { data } = await apiClient.put<Vehicle>(`/vehicles/${id}`, payload, {
     headers: authHeaders(token),
   });
   return data;
 }
 
 export async function deleteVehicle(token: string, id: number): Promise<void> {
-  await axios.delete(`${API_BASE}/vehicles/${id}`, {
+  await apiClient.delete(`/vehicles/${id}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 }
