@@ -10,10 +10,13 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Repository\VehicleRepository;
 use App\State\VehicleDeleteProcessor;
+use App\State\VehicleToggleProcessor;
+use App\State\VehicleUpdateProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -25,8 +28,14 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new GetCollection(),
         new Get(),
         new Post(security: self::SECURITY_ADMIN),
-        new Put(security: self::SECURITY_ADMIN),
+        new Put(security: self::SECURITY_ADMIN, processor: VehicleUpdateProcessor::class),
         new Delete(security: self::SECURITY_ADMIN, processor: VehicleDeleteProcessor::class),
+        new Patch(
+            uriTemplate: '/vehicles/{id}/toggle-availability',
+            security: self::SECURITY_ADMIN,
+            processor: VehicleToggleProcessor::class,
+            deserialize: false,
+        ),
     ],
     normalizationContext: ['groups' => [self::GROUP_READ]],
     denormalizationContext: ['groups' => [self::GROUP_WRITE]],
@@ -345,5 +354,13 @@ class Vehicle
             $submission->setVehicle(null);
         }
         return $this;
+    }
+
+    #[Groups([self::GROUP_READ])]
+    public function getActiveSubmissionsCount(): int
+    {
+        return $this->submissions->filter(
+            fn(Submission $s) => in_array($s->getStatus(), [Submission::STATUS_PENDING, Submission::STATUS_APPROVED], true)
+        )->count();
     }
 }
