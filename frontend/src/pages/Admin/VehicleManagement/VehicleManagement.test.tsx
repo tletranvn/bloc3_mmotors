@@ -16,7 +16,12 @@ vi.mock('@tanstack/react-query', async () => {
 })
 vi.mock('../../../services/api/vehicleService', async (importOriginal) => {
   const actual = await importOriginal<typeof vehicleService>()
-  return { ...actual, deleteVehicle: vi.fn() }
+  return {
+    ...actual,
+    deleteVehicle: vi.fn(),
+    toggleVehicleAvailability: vi.fn(),
+    updateVehicle: vi.fn(),
+  }
 })
 vi.mock('../../../components/features/admin/VehicleForm/VehicleForm', () => ({
   default: ({ vehicle, onCancel, onSuccess }: { vehicle?: Vehicle; onCancel: () => void; onSuccess: () => void }) => (
@@ -30,6 +35,7 @@ vi.mock('../../../components/features/admin/VehicleForm/VehicleForm', () => ({
 
 const mockUseVehicles = vi.mocked(useVehiclesModule.useVehicles)
 
+// Véhicule SALE sans loyer (toggle → modal prix)
 const mockVehicle: Vehicle = {
   '@id': '/api/vehicles/1',
   '@type': 'Vehicle',
@@ -47,6 +53,7 @@ const mockVehicle: Vehicle = {
   description: null,
   createdAt: '2026-01-01T00:00:00Z',
   imageUrl: null,
+  activeSubmissionsCount: 0,
 }
 
 const mockVehicle2: Vehicle = {
@@ -57,8 +64,40 @@ const mockVehicle2: Vehicle = {
   model: '308',
 }
 
+// Véhicule SALE avec les deux prix → toggle direct (sans modal)
+const mockVehicleWithBothPrices: Vehicle = {
+  ...mockVehicle,
+  id: 3,
+  brand: 'Toyota',
+  model: 'Yaris',
+  rentalPriceMonthly: '450.00',
+  activeSubmissionsCount: 0,
+}
+
+// Véhicule avec dossiers actifs → boutons désactivés
+const mockVehicleActive: Vehicle = {
+  ...mockVehicle,
+  id: 4,
+  brand: 'Tesla',
+  model: 'Model 3',
+  activeSubmissionsCount: 2,
+}
+
 function renderPage() {
   return render(<MemoryRouter><VehicleManagement /></MemoryRouter>)
+}
+
+function mockToggleSuccess() {
+  vi.mocked(vehicleService.toggleVehicleAvailability).mockResolvedValue({
+    ...mockVehicleWithBothPrices,
+    availabilityType: 'RENTAL',
+  })
+}
+
+function mockToggle409() {
+  vi.mocked(vehicleService.toggleVehicleAvailability).mockRejectedValue({
+    response: { status: 409, data: { detail: 'Impossible : un dossier est en cours.' } },
+  })
 }
 
 beforeEach(() => {
@@ -69,6 +108,8 @@ beforeEach(() => {
     isError: false,
   } as unknown as ReturnType<typeof useVehiclesModule.useVehicles>)
   vi.mocked(vehicleService.deleteVehicle).mockResolvedValue()
+  vi.mocked(vehicleService.updateVehicle).mockResolvedValue(mockVehicle)
+  mockToggleSuccess()
 })
 
 describe('VehicleManagement', () => {
@@ -84,9 +125,10 @@ describe('VehicleManagement', () => {
     expect(screen.getByText('Peugeot 308')).toBeInTheDocument()
   })
 
-  it('affiche les boutons "Modifier" et "Supprimer" pour chaque véhicule', () => {
+  it('affiche les boutons "Modifier", "Basculer" et "Supprimer" pour chaque véhicule', () => {
     renderPage()
     expect(screen.getAllByRole('button', { name: /modifier/i })).toHaveLength(2)
+    expect(screen.getAllByRole('button', { name: /basculer/i })).toHaveLength(2)
     expect(screen.getAllByRole('button', { name: /supprimer/i })).toHaveLength(2)
   })
 
@@ -127,8 +169,14 @@ describe('VehicleManagement', () => {
   it('ferme le formulaire après clic sur Annuler', () => {
     renderPage()
     fireEvent.click(screen.getByRole('button', { name: /ajouter un véhicule/i }))
-    expect(screen.getByTestId('vehicle-form')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /fermer form/i }))
+    expect(screen.queryByTestId('vehicle-form')).not.toBeInTheDocument()
+  })
+
+  it('ferme le formulaire après soumission réussie', () => {
+    renderPage()
+    fireEvent.click(screen.getByRole('button', { name: /ajouter un véhicule/i }))
+    fireEvent.click(screen.getByRole('button', { name: /soumettre form/i }))
     expect(screen.queryByTestId('vehicle-form')).not.toBeInTheDocument()
   })
 
@@ -143,7 +191,6 @@ describe('VehicleManagement', () => {
   it('ferme la modale de confirmation après clic sur Annuler', () => {
     renderPage()
     fireEvent.click(screen.getAllByRole('button', { name: /supprimer/i })[0])
-    expect(screen.getByRole('dialog')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /^annuler$/i }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
@@ -168,7 +215,7 @@ describe('VehicleManagement', () => {
     })
   })
 
-  it('affiche le message d\'erreur 409 si le véhicule a des dossiers actifs', async () => {
+  it('affiche le message d\'erreur 409 si le véhicule a des dossiers actifs (suppression)', async () => {
     vi.mocked(vehicleService.deleteVehicle).mockRejectedValue({ response: { status: 409 } })
     renderPage()
     fireEvent.click(screen.getAllByRole('button', { name: /supprimer/i })[0])
@@ -177,14 +224,6 @@ describe('VehicleManagement', () => {
       expect(screen.getByRole('alert')).toBeInTheDocument()
       expect(screen.getByText(/dossiers actifs/i)).toBeInTheDocument()
     })
-  })
-
-  it('ferme le formulaire après soumission réussie (handleFormSuccess)', () => {
-    renderPage()
-    fireEvent.click(screen.getByRole('button', { name: /ajouter un véhicule/i }))
-    expect(screen.getByTestId('vehicle-form')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: /soumettre form/i }))
-    expect(screen.queryByTestId('vehicle-form')).not.toBeInTheDocument()
   })
 
   it('affiche un message d\'erreur générique si la suppression échoue (non-409)', async () => {
@@ -206,7 +245,6 @@ describe('VehicleManagement', () => {
     } as unknown as ReturnType<typeof useVehiclesModule.useVehicles>)
     renderPage()
     expect(screen.getByText(/page 1 \/ 3/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '→' })).toBeInTheDocument()
   })
 
   it('avance à la page suivante via le bouton →', () => {
@@ -230,6 +268,153 @@ describe('VehicleManagement', () => {
     fireEvent.click(screen.getByRole('button', { name: '→' }))
     fireEvent.click(screen.getByRole('button', { name: '←' }))
     expect(screen.getByText(/page 1 \/ 3/i)).toBeInTheDocument()
+  })
+
+  // ─── Boutons désactivés (dossiers actifs) ──────────────────────────────────
+
+  describe('Boutons désactivés quand activeSubmissionsCount > 0', () => {
+    beforeEach(() => {
+      mockUseVehicles.mockReturnValue({
+        data: { member: [mockVehicleActive], totalItems: 1 },
+        isLoading: false,
+        isError: false,
+      } as unknown as ReturnType<typeof useVehiclesModule.useVehicles>)
+    })
+
+    it('désactive le bouton "Modifier"', () => {
+      renderPage()
+      expect(screen.getByRole('button', { name: /modifier/i })).toBeDisabled()
+    })
+
+    it('désactive le bouton "Basculer"', () => {
+      renderPage()
+      expect(screen.getByRole('button', { name: /basculer/i })).toBeDisabled()
+    })
+
+    it('désactive le bouton "Supprimer"', () => {
+      renderPage()
+      expect(screen.getByRole('button', { name: /supprimer/i })).toBeDisabled()
+    })
+
+    it('affiche le badge orange avec le compteur de dossiers', () => {
+      renderPage()
+      expect(screen.getByText(/2 actifs/i)).toBeInTheDocument()
+    })
+  })
+
+  // ─── Toggle direct (deux prix présents) ───────────────────────────────────
+
+  describe('Toggle direct (sans modal prix)', () => {
+    beforeEach(() => {
+      mockUseVehicles.mockReturnValue({
+        data: { member: [mockVehicleWithBothPrices], totalItems: 1 },
+        isLoading: false,
+        isError: false,
+      } as unknown as ReturnType<typeof useVehiclesModule.useVehicles>)
+    })
+
+    it('appelle toggleVehicleAvailability avec le bon token et id', async () => {
+      renderPage()
+      fireEvent.click(screen.getByRole('button', { name: /basculer/i }))
+      await waitFor(() => {
+        expect(vehicleService.toggleVehicleAvailability).toHaveBeenCalledWith('fake-token', 3)
+      })
+    })
+
+    it('affiche le toast de succès après bascule', async () => {
+      renderPage()
+      fireEvent.click(screen.getByRole('button', { name: /basculer/i }))
+      await waitFor(() => {
+        expect(screen.getByRole('status')).toBeInTheDocument()
+      })
+    })
+
+    it('affiche l\'erreur 409 avec le message du serveur', async () => {
+      mockToggle409()
+      renderPage()
+      fireEvent.click(screen.getByRole('button', { name: /basculer/i }))
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toHaveTextContent('Impossible : un dossier est en cours.')
+      })
+    })
+
+    it('affiche une erreur générique si toggle échoue (non-409)', async () => {
+      vi.mocked(vehicleService.toggleVehicleAvailability).mockRejectedValue({
+        response: { status: 500 },
+      })
+      renderPage()
+      fireEvent.click(screen.getByRole('button', { name: /basculer/i }))
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toBeInTheDocument()
+      })
+    })
+  })
+
+  // ─── Modal prix manquant ───────────────────────────────────────────────────
+
+  describe('Modal saisie prix manquant', () => {
+    it('ouvre la modal si rentalPriceMonthly absent (SALE)', () => {
+      renderPage()
+      fireEvent.click(screen.getAllByRole('button', { name: /basculer/i })[0])
+      expect(screen.getByText(/prix requis pour basculer/i)).toBeInTheDocument()
+    })
+
+    it('ferme la modal après clic sur Annuler sans appeler l\'API', () => {
+      renderPage()
+      fireEvent.click(screen.getAllByRole('button', { name: /basculer/i })[0])
+      fireEvent.click(screen.getByRole('button', { name: /annuler/i }))
+      expect(screen.queryByText(/prix requis pour basculer/i)).not.toBeInTheDocument()
+      expect(vehicleService.updateVehicle).not.toHaveBeenCalled()
+    })
+
+    it('le bouton "Confirmer" est désactivé si le champ prix est vide', () => {
+      renderPage()
+      fireEvent.click(screen.getAllByRole('button', { name: /basculer/i })[0])
+      expect(screen.getByRole('button', { name: /confirmer et basculer/i })).toBeDisabled()
+    })
+
+    it('appelle updateVehicle puis toggleVehicleAvailability après confirmation', async () => {
+      renderPage()
+      fireEvent.click(screen.getAllByRole('button', { name: /basculer/i })[0])
+      fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '450' } })
+      fireEvent.click(screen.getByRole('button', { name: /confirmer et basculer/i }))
+      await waitFor(() => {
+        expect(vehicleService.updateVehicle).toHaveBeenCalledTimes(1)
+        expect(vehicleService.toggleVehicleAvailability).toHaveBeenCalledWith('fake-token', 1)
+      })
+    })
+
+    it('ferme la modal après confirmation réussie', async () => {
+      renderPage()
+      fireEvent.click(screen.getAllByRole('button', { name: /basculer/i })[0])
+      fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '450' } })
+      fireEvent.click(screen.getByRole('button', { name: /confirmer et basculer/i }))
+      await waitFor(() => {
+        expect(screen.queryByText(/prix requis pour basculer/i)).not.toBeInTheDocument()
+      })
+    })
+
+    it('rollback : appelle updateVehicle deux fois si le toggle échoue (409)', async () => {
+      mockToggle409()
+      renderPage()
+      fireEvent.click(screen.getAllByRole('button', { name: /basculer/i })[0])
+      fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '450' } })
+      fireEvent.click(screen.getByRole('button', { name: /confirmer et basculer/i }))
+      await waitFor(() => {
+        expect(vehicleService.updateVehicle).toHaveBeenCalledTimes(2)
+      })
+    })
+
+    it('affiche l\'erreur après rollback', async () => {
+      mockToggle409()
+      renderPage()
+      fireEvent.click(screen.getAllByRole('button', { name: /basculer/i })[0])
+      fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '450' } })
+      fireEvent.click(screen.getByRole('button', { name: /confirmer et basculer/i }))
+      await waitFor(() => {
+        expect(screen.getByRole('alert')).toBeInTheDocument()
+      })
+    })
   })
 
 })

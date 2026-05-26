@@ -6,9 +6,10 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Patch;
 use App\Repository\SubmissionRepository;
 use App\State\SubmissionProcessor;
+use App\State\SubmissionStatusProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -21,7 +22,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         new GetCollection(security: "is_granted('ROLE_USER')"),
         new Get(security: "is_granted('ROLE_USER') and object.getClient() == user or is_granted('ROLE_ADMIN')"),
         new Post(security: "is_granted('ROLE_USER')", denormalizationContext: ['groups' => [self::GROUP_WRITE]], processor: SubmissionProcessor::class),
-        new Put(security: "is_granted('ROLE_ADMIN')", denormalizationContext: ['groups' => [self::GROUP_ADMIN_WRITE]]),
+        new Patch(security: "is_granted('ROLE_ADMIN')", denormalizationContext: ['groups' => [self::GROUP_ADMIN_WRITE]], processor: SubmissionStatusProcessor::class),
     ],
     // vehicle:read et document:read permettent d'embarquer les champs liés dans la réponse API.
     normalizationContext: ['groups' => [self::GROUP_READ, 'vehicle:read', 'document:read']],

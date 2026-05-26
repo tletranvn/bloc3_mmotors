@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../../hooks/useAuth'
 import { useVehicles } from '../../../hooks/useVehicles'
-import { deleteVehicle, type Vehicle } from '../../../services/api/vehicleService'
+import { deleteVehicle, toggleVehicleAvailability, updateVehicle, type Vehicle } from '../../../services/api/vehicleService'
 import VehicleForm from '../../../components/features/admin/VehicleForm/VehicleForm'
 import ConfirmDeleteModal from '../../../components/features/admin/ConfirmDeleteModal/ConfirmDeleteModal'
 import {
@@ -29,6 +29,13 @@ export default function VehicleManagement() {
   const [deleteTarget, setDeleteTarget] = useState<Vehicle | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+
+  const [isToggling, setIsToggling] = useState(false)
+  const [toggleError, setToggleError] = useState<string | null>(null)
+  const [toggleSuccess, setToggleSuccess] = useState<string | null>(null)
+  const [priceModalVehicle, setPriceModalVehicle] = useState<Vehicle | null>(null)
+  const [priceInput, setPriceInput] = useState('')
+  const [isSavingPrice, setIsSavingPrice] = useState(false)
 
   const vehicles = data?.member ?? []
   const totalItems = data?.totalItems ?? 0
@@ -57,6 +64,112 @@ export default function VehicleManagement() {
   function openDelete(vehicle: Vehicle) {
     setDeleteTarget(vehicle)
     setDeleteError(null)
+  }
+
+  function needsPriceForToggle(v: Vehicle): { needed: boolean; field: 'rental' | 'sale' | null } {
+    if ((v.availabilityType === 'SALE' || v.availabilityType === 'BOTH') && !v.rentalPriceMonthly) {
+      return { needed: true, field: 'rental' }
+    }
+    if (v.availabilityType === 'RENTAL' && !v.salePrice) {
+      return { needed: true, field: 'sale' }
+    }
+    return { needed: false, field: null }
+  }
+
+  async function executeToggle(v: Vehicle): Promise<boolean> {
+    if (!token) return false
+    setIsToggling(true)
+    setToggleError(null)
+    setToggleSuccess(null)
+    try {
+      const updated = await toggleVehicleAvailability(token, v.id)
+      queryClient.invalidateQueries({ queryKey: ['vehicles'] })
+      setToggleSuccess(`${updated.brand} ${updated.model} basculé en ${AVAILABILITY_TYPE_LABELS[updated.availabilityType] ?? updated.availabilityType}.`)
+      setTimeout(() => setToggleSuccess(null), 4000)
+      return true
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status
+      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
+      if (status === 409) {
+        setToggleError(msg ?? 'Impossible : un dossier est en cours (PENDING ou APPROVED).')
+      } else {
+        setToggleError(msg ?? 'Une erreur est survenue. Veuillez réessayer.')
+      }
+      return false
+    } finally {
+      setIsToggling(false)
+    }
+  }
+
+  function handleToggle(v: Vehicle) {
+    setToggleError(null)
+    if (v.activeSubmissionsCount > 0) {
+      executeToggle(v)
+      return
+    }
+    const { needed, field } = needsPriceForToggle(v)
+    if (needed) {
+      setPriceModalVehicle(v)
+      setPriceInput(field === 'rental' ? (v.rentalPriceMonthly ?? '') : (v.salePrice ?? ''))
+    } else {
+      executeToggle(v)
+    }
+  }
+
+  async function handleConfirmPriceAndToggle() {
+    if (!priceModalVehicle || !token) return
+    const price = parseFloat(priceInput)
+    if (isNaN(price) || price <= 0) return
+    setIsSavingPrice(true)
+
+    const vehicleId = priceModalVehicle.id
+    const { needed, field } = needsPriceForToggle(priceModalVehicle)
+
+    try {
+      if (!needed) { setPriceModalVehicle(null); return }
+
+      const payload = {
+        brand: priceModalVehicle.brand,
+        model: priceModalVehicle.model,
+        year: priceModalVehicle.year,
+        mileage: priceModalVehicle.mileage,
+        fuelType: priceModalVehicle.fuelType,
+        color: priceModalVehicle.color,
+        availabilityType: priceModalVehicle.availabilityType,
+        status: priceModalVehicle.status,
+        description: priceModalVehicle.description,
+        imageUrl: priceModalVehicle.imageUrl,
+        salePrice: field === 'sale' ? String(price) : priceModalVehicle.salePrice,
+        rentalPriceMonthly: field === 'rental' ? String(price) : priceModalVehicle.rentalPriceMonthly,
+      }
+
+      const rollbackPayload = {
+        ...payload,
+        salePrice: field === 'sale' ? priceModalVehicle.salePrice : payload.salePrice,
+        rentalPriceMonthly: field === 'rental' ? priceModalVehicle.rentalPriceMonthly : payload.rentalPriceMonthly,
+      }
+
+      await updateVehicle(token, vehicleId, payload)
+      queryClient.invalidateQueries({ queryKey: ['vehicles'] })
+
+      const vehicleWithPrice = { ...priceModalVehicle, ...payload }
+      setPriceModalVehicle(null)
+      setPriceInput('')
+
+      const toggled = await executeToggle(vehicleWithPrice as Vehicle)
+
+      if (!toggled) {
+        try {
+          await updateVehicle(token, vehicleId, rollbackPayload)
+        } finally {
+          queryClient.invalidateQueries({ queryKey: ['vehicles'] })
+        }
+      }
+    } catch {
+      setToggleError('Erreur lors de la mise à jour du prix.')
+    } finally {
+      setIsSavingPrice(false)
+    }
   }
 
   async function handleConfirmDelete() {
@@ -92,6 +205,18 @@ export default function VehicleManagement() {
         </button>
       </div>
 
+      {toggleSuccess && (
+        <div role="status" className="bg-green-50 border border-green-200 rounded-lg px-5 py-3">
+          <p className="text-sm text-green-700">{toggleSuccess}</p>
+        </div>
+      )}
+
+      {toggleError && (
+        <div role="alert" className="bg-orange-50 border border-orange-200 rounded-lg px-5 py-3">
+          <p className="text-sm text-orange-700">{toggleError}</p>
+        </div>
+      )}
+
       {deleteError && (
         <div role="alert" className="bg-red-50 border border-red-200 rounded-lg px-5 py-3">
           <p className="text-sm text-red-700">{deleteError}</p>
@@ -113,13 +238,14 @@ export default function VehicleManagement() {
                   <th className="text-left px-4 py-3 font-medium text-muted text-xs uppercase tracking-wide">Prix vente</th>
                   <th className="text-left px-4 py-3 font-medium text-muted text-xs uppercase tracking-wide">Loyer réf.</th>
                   <th className="text-left px-4 py-3 font-medium text-muted text-xs uppercase tracking-wide">Statut</th>
+                  <th className="text-left px-4 py-3 font-medium text-muted text-xs uppercase tracking-wide">Dossiers</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-black/5">
                 {vehicles.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-muted text-sm">Aucun véhicule.</td>
+                    <td colSpan={8} className="px-4 py-8 text-center text-muted text-sm">Aucun véhicule.</td>
                   </tr>
                 )}
                 {vehicles.map(v => (
@@ -138,16 +264,37 @@ export default function VehicleManagement() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
+                      {v.activeSubmissionsCount > 0 ? (
+                        <span className="text-xs font-medium px-2 py-1 rounded bg-orange-100 text-orange-700">
+                          {v.activeSubmissionsCount} actif{v.activeSubmissionsCount > 1 ? 's' : ''}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-muted">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
                       <div className="flex gap-2 justify-end">
                         <button
                           onClick={() => openEdit(v)}
-                          className="hover-btn text-xs font-medium px-3 py-1.5 rounded border border-black/15 text-foreground"
+                          disabled={v.activeSubmissionsCount > 0}
+                          title={v.activeSubmissionsCount > 0 ? 'Modification impossible : dossier(s) en cours' : undefined}
+                          className="hover-btn text-xs font-medium px-3 py-1.5 rounded border border-black/15 text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           Modifier
                         </button>
                         <button
+                          onClick={() => handleToggle(v)}
+                          disabled={isToggling || v.activeSubmissionsCount > 0}
+                          title={v.activeSubmissionsCount > 0 ? 'Basculer impossible : dossier(s) en cours' : undefined}
+                          className="hover-btn text-xs font-medium px-3 py-1.5 rounded border border-blue-200 text-blue-600 disabled:border-blue-100 disabled:text-blue-300 disabled:cursor-not-allowed"
+                        >
+                          Basculer
+                        </button>
+                        <button
                           onClick={() => openDelete(v)}
-                          className="hover-btn text-xs font-medium px-3 py-1.5 rounded border border-red-200 text-red-600"
+                          disabled={v.activeSubmissionsCount > 0}
+                          title={v.activeSubmissionsCount > 0 ? 'Suppression impossible : dossier(s) en cours' : undefined}
+                          className="hover-btn text-xs font-medium px-3 py-1.5 rounded border border-red-200 text-red-600 disabled:border-red-100 disabled:text-red-300 disabled:cursor-not-allowed"
                         >
                           Supprimer
                         </button>
@@ -190,6 +337,46 @@ export default function VehicleManagement() {
               onSuccess={handleFormSuccess}
               onCancel={closeForm}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Modal saisie prix manquant */}
+      {priceModalVehicle && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-xl shadow-xl max-w-sm w-full mx-4 p-6 flex flex-col gap-4">
+            <h2 className="font-display text-lg font-bold text-foreground">
+              Prix requis pour basculer
+            </h2>
+            <p className="text-sm text-muted">
+              {needsPriceForToggle(priceModalVehicle).field === 'rental'
+                ? 'Définissez le loyer mensuel (€) avant de basculer en Location.'
+                : 'Définissez le prix de vente (€) avant de basculer en Vente.'}
+            </p>
+            <input
+              type="number"
+              min="1"
+              step="0.01"
+              value={priceInput}
+              onChange={e => setPriceInput(e.target.value)}
+              placeholder={needsPriceForToggle(priceModalVehicle).field === 'rental' ? 'Ex : 450' : 'Ex : 18500'}
+              className="border border-black/15 rounded px-3 py-2 text-sm w-full"
+            />
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => { setPriceModalVehicle(null); setPriceInput('') }}
+                className="hover-btn text-sm font-medium px-4 py-2 rounded border border-black/15 text-foreground"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleConfirmPriceAndToggle}
+                disabled={isSavingPrice || !priceInput || parseFloat(priceInput) <= 0}
+                className="hover-btn text-sm font-medium px-4 py-2 rounded bg-primary text-white disabled:opacity-40"
+              >
+                {isSavingPrice ? 'Enregistrement...' : 'Confirmer et basculer'}
+              </button>
+            </div>
           </div>
         </div>
       )}
