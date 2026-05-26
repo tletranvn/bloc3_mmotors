@@ -19,11 +19,16 @@ class SubmissionRepository extends ServiceEntityRepository
 
     public function hasActiveSubmissionForVehicle(Vehicle $vehicle): bool
     {
+        return $vehicle->getId() !== null && $this->hasActiveSubmissionForVehicleId($vehicle->getId());
+    }
+
+    public function hasActiveSubmissionForVehicleId(int $vehicleId): bool
+    {
         return (int) $this->createQueryBuilder('s')
             ->select('COUNT(s.id)')
-            ->where('s.vehicle = :vehicle')
+            ->where('IDENTITY(s.vehicle) = :vehicleId')
             ->andWhere('s.status IN (:statuses)')
-            ->setParameter('vehicle', $vehicle)
+            ->setParameter('vehicleId', $vehicleId)
             ->setParameter('statuses', [Submission::STATUS_PENDING, Submission::STATUS_APPROVED])
             ->getQuery()
             ->getSingleScalarResult() > 0;
