@@ -17,6 +17,7 @@ export type Vehicle = {
   description: string | null;
   createdAt: string;
   imageUrl: string | null;
+  activeSubmissionsCount: number;
 };
 
 export type VehicleCollection = {
@@ -101,4 +102,13 @@ export async function deleteVehicle(token: string, id: number): Promise<void> {
   await apiClient.delete(`/vehicles/${id}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
+}
+
+export async function toggleVehicleAvailability(token: string, id: number): Promise<Vehicle> {
+  const { data } = await apiClient.patch<Vehicle>(
+    `/vehicles/${id}/toggle-availability`,
+    {},
+    { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/merge-patch+json' } },
+  );
+  return data;
 }
