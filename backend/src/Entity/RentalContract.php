@@ -18,7 +18,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new Put(security: "is_granted('ROLE_ADMIN')", denormalizationContext: ['groups' => [self::GROUP_ADMIN_WRITE]]),
     ],
     normalizationContext: ['groups' => [self::GROUP_READ]],
-    paginationMaximumItemsPerPage: 50,
+    paginationMaximumItemsPerPage: 20,
 )]
 #[ORM\Entity(repositoryClass: RentalContractRepository::class)]
 class RentalContract

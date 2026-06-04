@@ -40,7 +40,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     normalizationContext: ['groups' => [self::GROUP_READ]],
     denormalizationContext: ['groups' => [self::GROUP_WRITE]],
     paginationItemsPerPage: 12,
-    paginationMaximumItemsPerPage: 100,
+    paginationMaximumItemsPerPage: 30,
 )]
 #[ORM\Entity(repositoryClass: VehicleRepository::class)]
 #[ORM\Index(name: 'idx_vehicle_availability_type', columns: ['availability_type'])]

@@ -27,6 +27,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     // vehicle:read et document:read permettent d'embarquer les champs liés dans la réponse API.
     normalizationContext: ['groups' => [self::GROUP_READ, 'vehicle:read', 'document:read']],
     denormalizationContext: ['groups' => [self::GROUP_WRITE]],
+    paginationMaximumItemsPerPage: 20,
 )]
 #[ORM\Entity(repositoryClass: SubmissionRepository::class)]
 #[ORM\UniqueConstraint(name: 'uq_submission_client_vehicle_type', columns: ['client_id', 'vehicle_id', 'type'])]

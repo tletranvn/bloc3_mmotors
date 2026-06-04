@@ -6,12 +6,12 @@ use App\Entity\Document;
 use App\Entity\Submission;
 use App\Service\CloudinaryService;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
@@ -25,6 +25,7 @@ class DocumentUploadController extends AbstractController
         private CloudinaryService $cloudinaryService,
         private EntityManagerInterface $entityManager,
         private Security $security,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -33,12 +34,15 @@ class DocumentUploadController extends AbstractController
     {
         $submission = $this->entityManager->find(Submission::class, $id);
 
-        if ($submission === null) {
-            throw new NotFoundHttpException('Dossier introuvable.');
-        }
+        // Dossier inexistant ou appartenant a un autre client : meme reponse 404
+        // pour ne pas reveler l'existence d'un dossier (anti-enumeration, DT-004).
+        if ($submission === null || $submission->getClient() !== $this->security->getUser()) {
+            $this->logger->warning('document_upload_denied', [
+                'user_id'       => $this->security->getUser()?->getId(),
+                'submission_id' => $id,
+            ]);
 
-        if ($submission->getClient() !== $this->security->getUser()) {
-            throw new AccessDeniedHttpException('Accès refusé.');
+            throw new NotFoundHttpException('Dossier introuvable.');
         }
 
         $file = $request->files->get('file');
