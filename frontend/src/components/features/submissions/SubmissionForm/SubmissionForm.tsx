@@ -5,8 +5,7 @@ import { useAuth } from '../../../../hooks/useAuth'
 import { useRentalCalculator } from '../../../../hooks/useRentalCalculator'
 import { createSubmission, uploadDocument } from '../../../../services/api/submissionService'
 import type { Vehicle } from '../../../../services/api/vehicleService'
-
-const RENTAL_SERVICES = ['Assurance tous risques', 'Assistance 24h/24', 'Entretien inclus', 'Contrôle technique']
+import ServiceCheckboxes from '../ServiceCheckboxes/ServiceCheckboxes'
 
 const DURATION_OPTIONS = [
   { value: 24, label: '24 mois (+10%)' },
@@ -48,6 +47,7 @@ export default function SubmissionForm({ vehicle, type }: Props) {
   // Champs et documents spécifiques RENTAL
   const [duration, setDuration] = useState(36)
   const [annualKm, setAnnualKm] = useState(10000)
+  const [selectedServices, setSelectedServices] = useState<string[]>([])
   const [ribFile, setRibFile] = useState<File | null>(null)
   const [payslip1, setPayslip1] = useState<File | null>(null)
   const [payslip2, setPayslip2] = useState<File | null>(null)
@@ -56,7 +56,7 @@ export default function SubmissionForm({ vehicle, type }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const calculatedMonthly = useRentalCalculator(vehicle.rentalPriceMonthly, duration, annualKm)
+  const calculatedMonthly = useRentalCalculator(vehicle.rentalPriceMonthly, duration, annualKm, selectedServices)
 
   const isFormValid =
     profession.trim() !== '' &&
@@ -82,6 +82,7 @@ export default function SubmissionForm({ vehicle, type }: Props) {
           duration,
           annualKm,
           monthlyTotal: calculatedMonthly ?? undefined,
+          services: selectedServices,
         }),
       })
 
@@ -219,15 +220,15 @@ export default function SubmissionForm({ vehicle, type }: Props) {
             </div>
           </div>
 
+          <ServiceCheckboxes selectedServices={selectedServices} onChange={setSelectedServices} />
+
           {calculatedMonthly && (
             <div className="bg-gray-50 border border-black/10 rounded px-4 py-3">
               <p className="text-xs text-muted mb-1">Loyer mensuel estimé</p>
               <p className="text-foreground font-bold text-lg">
                 {formatPrice(calculatedMonthly)}<span className="text-sm font-normal text-muted">/mois</span>
               </p>
-              <p className="text-xs text-muted mt-1">
-                {RENTAL_SERVICES.join(', ')} inclus
-              </p>
+              <p className="text-xs text-muted mt-1">Durée, kilométrage et services optionnels inclus</p>
             </div>
           )}
         </div>

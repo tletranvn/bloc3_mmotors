@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Patch;
 use App\Repository\SubmissionRepository;
+use App\Service\RentalCalculatorService;
 use App\State\SubmissionProcessor;
 use App\State\SubmissionStatusProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -84,6 +85,14 @@ class Submission
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     #[Groups([self::GROUP_READ, self::GROUP_ADMIN_WRITE])]
     private ?string $monthlyTotal = null;
+
+    /** @var string[]|null Services optionnels LLD sélectionnés (voir RentalCalculatorService::SERVICE_KEYS). */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Groups([self::GROUP_READ, self::GROUP_WRITE])]
+    #[Assert\All([
+        new Assert\Choice(choices: RentalCalculatorService::SERVICE_KEYS, message: 'Service invalide.'),
+    ])]
+    private ?array $services = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups([self::GROUP_READ, self::GROUP_ADMIN_WRITE])]
@@ -198,6 +207,19 @@ class Submission
     public function setMonthlyTotal(?string $monthlyTotal): static
     {
         $this->monthlyTotal = $monthlyTotal;
+        return $this;
+    }
+
+    /** @return string[]|null */
+    public function getServices(): ?array
+    {
+        return $this->services;
+    }
+
+    /** @param string[]|null $services */
+    public function setServices(?array $services): static
+    {
+        $this->services = $services;
         return $this;
     }
 

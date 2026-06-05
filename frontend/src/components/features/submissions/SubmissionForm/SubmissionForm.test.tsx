@@ -282,6 +282,7 @@ describe('SubmissionForm', () => {
         duration: 36,
         annualKm: 10000,
         monthlyTotal: '350.00',
+        services: [],
       })
       // 2 docs communs + RIB + 3 bulletins = 6 uploads
       expect(submissionService.uploadDocument).toHaveBeenCalledTimes(6)

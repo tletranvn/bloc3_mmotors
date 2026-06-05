@@ -65,6 +65,7 @@ export interface CreateSubmissionParams {
   duration?: number
   annualKm?: number
   monthlyTotal?: string
+  services?: string[]
 }
 
 export async function createSubmission(token: string, params: CreateSubmissionParams): Promise<Submission> {
@@ -78,6 +79,7 @@ export async function createSubmission(token: string, params: CreateSubmissionPa
       ...(params.duration !== undefined && { duration: params.duration }),
       ...(params.annualKm !== undefined && { annualKm: params.annualKm }),
       ...(params.monthlyTotal !== undefined && { monthlyTotal: params.monthlyTotal }),
+      ...(params.services !== undefined && { services: params.services }),
     },
     { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/ld+json' } },
   )
