@@ -80,7 +80,7 @@ class SubmissionProcessor implements ProcessorInterface
             }
 
             // Calcul autoritaire côté serveur — on ne fait pas confiance au montant envoyé par le client.
-            $data->setMonthlyTotal($this->rentalCalculator->calculateMonthlyTotal($basePrice, $duration, $annualKm));
+            $data->setMonthlyTotal($this->rentalCalculator->calculateMonthlyTotal($basePrice, $duration, $annualKm, $data->getServices() ?? []));
         }
 
         try {
