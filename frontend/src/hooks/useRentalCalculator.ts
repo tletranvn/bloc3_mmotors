@@ -1,3 +1,5 @@
+import { SERVICE_PRICING, type ServiceKey } from '../constants/services'
+
 // Même formule que RentalCalculatorService.php — doit rester synchronisée avec le backend.
 const DURATION_COEFFICIENTS: Record<number, number> = {
   24: 1.10,
@@ -12,7 +14,12 @@ const KM_SURCHARGES: Record<number, number> = {
   25000: 50,
 }
 
-export function useRentalCalculator(basePrice: string | null | undefined, duration: number, annualKm: number): string | null {
+export function useRentalCalculator(
+  basePrice: string | null | undefined,
+  duration: number,
+  annualKm: number,
+  services: string[] = [],
+): string | null {
   if (!basePrice) return null
 
   const coefficient = DURATION_COEFFICIENTS[duration]
@@ -20,6 +27,9 @@ export function useRentalCalculator(basePrice: string | null | undefined, durati
 
   if (coefficient === undefined || surcharge === undefined) return null
 
-  const monthly = parseFloat(basePrice) * coefficient + surcharge
+  // Coût des services optionnels ; une clé inconnue est ignorée (ajoute 0).
+  const servicesCost = services.reduce((sum, service) => sum + (SERVICE_PRICING[service as ServiceKey] ?? 0), 0)
+
+  const monthly = parseFloat(basePrice) * coefficient + surcharge + servicesCost
   return monthly.toFixed(2)
 }
