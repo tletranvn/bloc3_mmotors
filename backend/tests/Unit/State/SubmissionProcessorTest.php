@@ -227,6 +227,44 @@ class SubmissionProcessorTest extends TestCase
         $this->assertSame('350.00', $submission->getMonthlyTotal());
     }
 
+    public function testRentalIncludesSelectedServicesInMonthlyTotal(): void
+    {
+        $vehicle = $this->makeVehicle(Vehicle::STATUS_AVAILABLE, Vehicle::AVAILABILITY_RENTAL, '350');
+        $submission = new Submission();
+        $submission->setVehicle($vehicle);
+        $submission->setType(Submission::TYPE_RENTAL);
+        $submission->setDuration(36);
+        $submission->setAnnualKm(10000);
+        $submission->setServices([
+            RentalCalculatorService::SERVICE_MAINTENANCE,
+            RentalCalculatorService::SERVICE_TIRES,
+        ]);
+
+        $this->innerProcessor->expects($this->once())->method('process')->willReturn($submission);
+
+        $this->processor->process($submission, new Post());
+
+        // 350 × 1.00 + 0 + MAINTENANCE (150) + TIRES (25) = 525.00
+        $this->assertSame('525.00', $submission->getMonthlyTotal());
+    }
+
+    public function testRentalWithoutServicesIsValid(): void
+    {
+        $vehicle = $this->makeVehicle(Vehicle::STATUS_AVAILABLE, Vehicle::AVAILABILITY_RENTAL, '350');
+        $submission = new Submission();
+        $submission->setVehicle($vehicle);
+        $submission->setType(Submission::TYPE_RENTAL);
+        $submission->setDuration(36);
+        $submission->setAnnualKm(10000);
+        // services laissé à null
+
+        $this->innerProcessor->expects($this->once())->method('process')->willReturn($submission);
+
+        $this->processor->process($submission, new Post());
+
+        $this->assertSame('350.00', $submission->getMonthlyTotal());
+    }
+
     public function testRentalAcceptsBothAvailabilityType(): void
     {
         $vehicle = $this->makeVehicle(Vehicle::STATUS_AVAILABLE, Vehicle::AVAILABILITY_BOTH, '400');

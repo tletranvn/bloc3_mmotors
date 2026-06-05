@@ -85,6 +85,18 @@ class SubmissionTest extends TestCase
         $this->assertNull($this->submission->getMonthlyTotal());
     }
 
+    public function testSetGetServices(): void
+    {
+        $this->submission->setServices(['MAINTENANCE', 'TIRES']);
+        $this->assertSame(['MAINTENANCE', 'TIRES'], $this->submission->getServices());
+    }
+
+    public function testServicesNullable(): void
+    {
+        $this->submission->setServices(null);
+        $this->assertNull($this->submission->getServices());
+    }
+
     public function testSetGetRejectionReason(): void
     {
         $this->submission->setRejectionReason('Revenus insuffisants');

@@ -48,4 +48,40 @@ class RentalCalculatorServiceTest extends TestCase
         $result = $this->service->calculateMonthlyTotal('299.90', 36, 10000);
         $this->assertSame('299.90', $result);
     }
+
+    public function testNoServiceLeavesBaseUnchanged(): void
+    {
+        // 36 mois / 10K km, aucun service → prix de base
+        $result = $this->service->calculateMonthlyTotal('350', 36, 10000, []);
+        $this->assertSame('350.00', $result);
+    }
+
+    public function testSingleServiceAddsItsCost(): void
+    {
+        // 350 + MAINTENANCE (150) = 500
+        $result = $this->service->calculateMonthlyTotal('350', 36, 10000, [RentalCalculatorService::SERVICE_MAINTENANCE]);
+        $this->assertSame('500.00', $result);
+    }
+
+    public function testMultipleServicesAddAllCosts(): void
+    {
+        // 350 + MAINTENANCE (150) + TIRES (25) = 525
+        $services = [RentalCalculatorService::SERVICE_MAINTENANCE, RentalCalculatorService::SERVICE_TIRES];
+        $result   = $this->service->calculateMonthlyTotal('350', 36, 10000, $services);
+        $this->assertSame('525.00', $result);
+    }
+
+    public function testServicesCombineWithDurationAndKm(): void
+    {
+        // 24 mois (×1.10) + 15K km (+15€) + INSURANCE (80) → 385 + 15 + 80 = 480
+        $result = $this->service->calculateMonthlyTotal('350', 24, 15000, [RentalCalculatorService::SERVICE_INSURANCE]);
+        $this->assertSame('480.00', $result);
+    }
+
+    public function testUnknownServiceIsIgnored(): void
+    {
+        // Une clé inconnue n'ajoute rien (validation faite en amont via Assert\Choice)
+        $result = $this->service->calculateMonthlyTotal('350', 36, 10000, ['HACKING']);
+        $this->assertSame('350.00', $result);
+    }
 }
