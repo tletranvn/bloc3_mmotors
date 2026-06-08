@@ -11,6 +11,11 @@ import SubmissionPage from './pages/SubmissionPage/SubmissionPage'
 import SubmissionsList from './pages/SubmissionsList/SubmissionsList'
 import SubmissionDetail from './pages/SubmissionsList/SubmissionDetail'
 import VehicleManagement from './pages/Admin/VehicleManagement/VehicleManagement'
+import MentionsLegales from './pages/Legal/MentionsLegales'
+import Cgu from './pages/Legal/Cgu'
+import PolitiqueConfidentialite from './pages/Legal/PolitiqueConfidentialite'
+import Contact from './pages/Contact/Contact'
+import About from './pages/About/About'
 import ProtectedRoute from './components/shared/ProtectedRoute'
 
 const router = createBrowserRouter([
@@ -23,6 +28,11 @@ const router = createBrowserRouter([
       { path: 'vehicles/:id', element: <VehicleDetail /> },
       { path: 'register', element: <Register /> },
       { path: 'login', element: <Login /> },
+      { path: 'mentions-legales', element: <MentionsLegales /> },
+      { path: 'cgu', element: <Cgu /> },
+      { path: 'politique-confidentialite', element: <PolitiqueConfidentialite /> },
+      { path: 'contact', element: <Contact /> },
+      { path: 'about', element: <About /> },
       {
         path: 'dashboard',
         element: <ProtectedRoute><Dashboard /></ProtectedRoute>,
